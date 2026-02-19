@@ -1,0 +1,66 @@
+﻿@model StarChampionship.Models.Player
+
+@{
+    ViewData["Title"] = "Detalhes do Jogador";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div>
+    <h4>@Model.Name</h4>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-4 text-center">
+            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+            {
+                <img src="@Model.ImageUrl" alt="Foto de @Model.Name" class="img-thumbnail shadow" style="width: 250px; height: 250px; object-fit: cover; border-radius: 50%;" />
+            }
+            else
+            {
+                <div class="bg-secondary text-white d-flex align-items-center justify-content-center mx-auto shadow" style="width: 250px; height: 250px; border-radius: 50%;">
+                    <span>Sem Foto</span>
+                </div>
+            }
+            <h3 class="mt-3">Overall: <span class="badge bg-success">@Model.Overall.ToString("F1")</span></h3>
+        </div>
+
+        <div class="col-md-8">
+            <dl class="row">
+                <dt class="col-sm-3">Posição</dt>
+                <dd class="col-sm-9">@Html.DisplayFor(model => model.Type)</dd>
+
+            </dl>
+
+            <h5 class="mt-4">Atributos Técnicos</h5>
+            <hr />
+            <div class="row text-center">
+                <div class="col-sm-2">
+                    <strong>Chute</strong><br />
+                    @Model.Shoot
+                </div>
+                <div class="col-sm-2">
+                    <strong>Defesa</strong><br />
+                    @Model.Defense
+                </div>
+                <div class="col-sm-2">
+                    <strong>Passe</strong><br />
+                    @Model.Pass
+                </div>
+                <div class="col-sm-2">
+                    <strong>Veloc.</strong><br />
+                    @Model.Speed
+                </div>
+                <div class="col-sm-2">
+                    <strong>Força</strong><br />
+                    @Model.Strength
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Editar</a>
+    <a asp-action="Index" class="btn btn-secondary">Voltar para a Lista</a>
+</div>
