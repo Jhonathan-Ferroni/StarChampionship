@@ -1,0 +1,86 @@
+﻿@model IEnumerable<IGrouping<Department, SalesRecord>>
+
+@{
+    // Plano (pseudocódigo detalhado):
+    // 1. Ler ViewData["minDate"] e ViewData["maxDate"] como strings seguras (pode ser null).
+    // 2. Tentar converter com DateTime.TryParse para evitar exceções e diagnósticos CS8602/CS8604.
+    // 3. Se a conversão falhar, atribuir valores padrão (por exemplo, um mês atrás e hoje).
+    // 4. Atualizar ViewData["minDate"] e ViewData["maxDate"] com formato "yyyy-MM-dd" para usar nos inputs type="date".
+    // 5. Usar as variáveis forte-tipadas minDate e maxDate ao chamar TotalSales para evitar cast inseguro de ViewData.
+    // 6. Manter o restante do markup inalterado, somente substituir usos inseguros.
+
+    ViewData["Title"] = "Grouping Search";
+
+    // 1. Ler como strings seguras
+    string? minDateStr = ViewData["minDate"] as string;
+    string? maxDateStr = ViewData["maxDate"] as string;
+
+    // 2. Tentar parse com fallback
+    DateTime minDate;
+    DateTime maxDate;
+
+    if (!DateTime.TryParse(minDateStr, out minDate))
+    {
+        // 3. Valor padrão caso ViewData esteja ausente ou inválido
+        minDate = DateTime.Today.AddMonths(-1);
+    }
+
+    if (!DateTime.TryParse(maxDateStr, out maxDate))
+    {
+        maxDate = DateTime.Today;
+    }
+
+    // 4. Atualizar ViewData para exibir corretamente no input[type=date] (formato yyyy-MM-dd)
+    ViewData["minDate"] = minDate.ToString("yyyy-MM-dd");
+    ViewData["maxDate"] = maxDate.ToString("yyyy-MM-dd");
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+        <form class="navbar-form navbar-left" role="search">
+            <div class="form-group">
+                <label for="minDate" style="color: white; margin-right: 5px;">Min Date</label>
+                <input type="date" name="minDate" id="minDate" class="form-control" value="@(ViewData["minDate"])" />
+            </div>
+            <div class="form-group">
+                <label for="maxDate" style="color: white; margin-left: 10px; margin-right: 5px;">Max Date</label>
+                <input type="date" name="maxDate" id="maxDate" class="form-control" value="@(ViewData["maxDate"])" />
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Filter</button>
+        </form>
+    </div>
+</nav>
+
+@foreach (var departmentGroup in Model)
+{
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">Department: @departmentGroup.Key.Name | Total Sales = @departmentGroup.Key.TotalSales(minDate, maxDate).ToString("F2")</h3>
+        </div>
+        <div class="panel-body">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr class="success">
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Seller</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in departmentGroup)
+                    {
+                        <tr>
+                            <td>@Html.DisplayFor(modelItem => item.Date)</td>
+                            <td>@Html.DisplayFor(modelItem => item.Amount)</td>
+                            <td>@Html.DisplayFor(modelItem => item.Seller.Name)</td>
+                            <td>@Html.DisplayFor(modelItem => item.Status)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
