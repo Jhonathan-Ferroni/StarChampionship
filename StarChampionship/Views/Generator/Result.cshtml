@@ -5,12 +5,14 @@
     var teamB = ViewBag.TeamB as List<Player>;
     var sumA = teamA?.Sum(p => p.Overall) ?? 0;
     var sumB = teamB?.Sum(p => p.Overall) ?? 0;
+    var difference = (double)ViewBag.Difference;
+    var margin = (double)ViewBag.Margin;
 }
 
 <div class="container mt-4">
     <div class="text-center mb-5">
         <h2><i class="bi bi-trophy"></i> Confronto Equilibrado</h2>
-        <p class="text-muted">Os times foram divididos usando a lógica de Snake Draft para minimizar a diferença de nível.</p>
+        <p class="text-muted">Algoritmo de otimização aplicado para garantir o melhor equilíbrio possível.</p>
     </div>
 
     <div class="row">
@@ -18,14 +20,14 @@
             <div class="card shadow border-primary">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">TIME A</h4>
-                    <span class="badge bg-light text-primary">Total: @sumA.ToString("F1")</span>
+                    <span class="badge bg-light text-primary fs-6">Total: @sumA.ToString("F1")</span>
                 </div>
                 <ul class="list-group list-group-flush">
                     @foreach (var p in teamA)
                     {
                         <li class="list-group-item d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center">
-                                <img src="@p.ImageUrl" class="rounded-circle me-3" style="width: 45px; height: 45px; object-fit: cover;" onerror="this.src='/img/default-player.png'">
+                                <img src="@p.ImageUrl" class="rounded-circle me-3" style="width: 45px; height: 45px; object-fit: cover;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/166/166344.png'">
                                 <div>
                                     <h6 class="mb-0">@p.Name</h6>
                                     <small class="text-muted">@p.Type</small>
@@ -42,14 +44,14 @@
             <div class="card shadow border-danger">
                 <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">TIME B</h4>
-                    <span class="badge bg-light text-danger">Total: @sumB.ToString("F1")</span>
+                    <span class="badge bg-light text-danger fs-6">Total: @sumB.ToString("F1")</span>
                 </div>
                 <ul class="list-group list-group-flush">
                     @foreach (var p in teamB)
                     {
                         <li class="list-group-item d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center">
-                                <img src="@p.ImageUrl" class="rounded-circle me-3" style="width: 45px; height: 45px; object-fit: cover;" onerror="this.src='/img/default-player.png'">
+                                <img src="@p.ImageUrl" class="rounded-circle me-3" style="width: 45px; height: 45px; object-fit: cover;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/166/166344.png'">
                                 <div>
                                     <h6 class="mb-0">@p.Name</h6>
                                     <small class="text-muted">@p.Type</small>
@@ -64,24 +66,40 @@
     </div>
 
     <div class="text-center mt-5">
-        <div class="alert @(Math.Abs(sumA - sumB) < 5 ? "alert-success" : "alert-warning") d-inline-block">
-            <strong>Diferença de Força:</strong> @(Math.Abs(sumA - sumB).ToString("F1")) pontos de Overall.
+        <div class="alert @(difference <= margin ? "alert-success" : "alert-warning") d-inline-block shadow-sm px-5">
+            <h5 class="mb-1">
+                @(difference <= margin ? "✅ Jogo Equilibrado" : "⚠️ Diferença Fora da Margem")
+            </h5>
+            <strong>Diferença Atual:</strong> @difference.ToString("F1") pts
+            <span class="mx-2">|</span>
+            <strong>Margem Meta:</strong> @margin.ToString("F1") pts
         </div>
 
-        <br />
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-5">
+                <div class="card p-3 shadow-sm border-secondary">
+                    <form asp-action="Generate" method="post">
+                        @foreach (var id in (int[])ViewBag.SelectedIds)
+                        {
+                            <input type="hidden" name="selectedIds" value="@id" />
+                        }
 
-        <form asp-action="Generate" method="post" class="d-inline">
-            @foreach (var id in (int[])ViewBag.SelectedIds)
-            {
-                <input type="hidden" name="selectedIds" value="@id" />
-            }
-            <button type="submit" class="btn btn-success mt-3">
-                <i class="bi bi-arrow-repeat"></i> Sortear Novamente
-            </button>
-        </form>
+                        <label class="form-label fw-bold text-dark">Ajustar Margem de Tolerância:</label>
+                        <div class="input-group mb-3">
+                            <input type="number" name="margin" step="0.5" value="@margin" class="form-control border-success text-center fw-bold" />
+                            <button type="submit" class="btn btn-success shadow-sm px-4">
+                                <i class="bi bi-arrow-repeat"></i> Re-sortear Agora
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
-        <a asp-action="Index" class="btn btn-outline-dark mt-3 ms-2">
-            <i class="bi bi-arrow-left"></i> Refazer Seleção
-        </a>
+        <div class="mt-4">
+            <a asp-action="Index" class="btn btn-outline-dark px-4">
+                <i class="bi bi-arrow-left"></i> Voltar para Seleção
+            </a>
+        </div>
     </div>
 </div>

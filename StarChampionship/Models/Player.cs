@@ -22,6 +22,7 @@ namespace StarChampionship.Models
         [Range(0, 100)]
         public double Shoot { get; set; }
 
+
         [Range(0, 100)]
         public double Defense { get; set; }
 
