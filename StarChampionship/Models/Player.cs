@@ -17,7 +17,7 @@ namespace StarChampionship.Models
         public string Type { get; set; }
 
         [Display(Name = "Imagem (URL)")]
-        public string ImageUrl { get; set; }
+        public string? ImageUrl { get; set; }
 
         [Range(0, 100)]
         public double Shoot { get; set; }

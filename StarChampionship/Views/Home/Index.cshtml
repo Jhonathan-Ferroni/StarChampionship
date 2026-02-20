@@ -1,10 +1,76 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
-<h2>@ViewData["Title"]</h2>
-<h2>@ViewData["Message"]</h2>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-5">
+    <div class="p-5 mb-4 bg-dark text-white rounded-3 shadow">
+        <div class="container-fluid py-5 text-center">
+            <h1 class="display-4 fw-bold">Star Championship</h1>
+            <p class="fs-4">O sistema definitivo para balanceamento de times e gestão de atletas.</p>
+            <hr class="my-4" style="border-top: 1px solid rgba(255,255,255,0.2)">
+        </div>
+    </div>
+
+    <div class="row g-4 py-2 row-cols-1 row-cols-lg-3">
+
+        <div class="feature col text-center">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-2 mb-3 p-3 rounded-circle">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <h3 class="fs-4 text-body-emphasis">Jogadores</h3>
+                    <p>Cadastre novos atletas, edite fotos e ajuste os atributos técnicos (Shoot, Defense, Speed).</p>
+                    <a asp-controller="Players" asp-action="Index" class="btn btn-primary shadow-sm">
+                        Ver Todos os Jogadores
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="feature col text-center">
+            <div class="card h-100 shadow border-success" style="border-width: 2px;">
+                <div class="card-body">
+                    <div class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-success bg-gradient fs-2 mb-3 p-3 rounded-circle">
+                        <i class="bi bi-shuffle"></i>
+                    </div>
+                    <h3 class="fs-4 text-body-emphasis">Gerador de Partida</h3>
+                    <p>Selecione os atletas do dia e gere times equilibrados automaticamente via algoritmo de otimização.</p>
+                    <a asp-controller="Generator" asp-action="Index" class="btn btn-success btn-lg shadow">
+                        Sortear Times Agora
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="feature col text-center">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-warning bg-gradient fs-2 mb-3 p-3 rounded-circle text-white">
+                        <i class="bi bi-bar-chart-line-fill"></i>
+                    </div>
+                    <h3 class="fs-4 text-body-emphasis">Histórico</h3>
+                    <p>Consulte os últimos sorteios e veja a análise de força entre os times gerados.</p>
+                    <button disabled class="btn btn-outline-secondary">
+                        Em Breve...
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="mt-5 p-4 border rounded bg-light">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h5>Dica de Ouro</h5>
+                <p class="mb-0 text-muted">
+                    Para um balanceamento mais preciso, certifique-se de que as notas de 0 a 100 dos jogadores estão atualizadas. O sistema agora usa uma margem de tolerância para garantir variedade nos sorteios!
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <span class="badge bg-info text-dark">Versão 2.0 (Stable)</span>
+            </div>
+        </div>
+    </div>
 </div>

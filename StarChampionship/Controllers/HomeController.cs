@@ -8,7 +8,7 @@ namespace StarChampionship.Controllers
     {
         public IActionResult Index()
         {
-            ViewData["Message"] = "Welcome to Sales Web MVC App from C# Course";
+            ViewData["Message"] = "Welcome";
             return View();
         }
 
