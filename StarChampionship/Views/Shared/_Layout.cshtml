@@ -16,11 +16,11 @@
 
     <style>
         body {
-            background-color: #0f1923; /* Tom de fundo consistente com o tema */
+            background-color: #0f1923;
         }
 
         .navbar {
-            border-bottom: 2px solid #df691a !important; /* Laranja do tema Superhero */
+            border-bottom: 2px solid #df691a !important;
             background-color: #2b3e50 !important;
         }
 
@@ -37,6 +37,18 @@
             background-color: #1a242f;
             color: #ebebeb;
             border-top: 1px solid rgba(255,255,255,0.1) !important;
+        }
+
+        /* AJUSTE MOBILE DO RODAPÉ */
+        @@media (max-width: 768px) {
+            .footer {
+                padding-top: 0.5rem !important;
+                padding-bottom: 0.5rem !important;
+            }
+
+                .footer .small, .footer a, .footer .badge {
+                    font-size: 0.7rem !important;
+                }
         }
     </style>
     @RenderSection("Styles", required: false)
@@ -88,15 +100,16 @@
         </main>
     </div>
 
-    <footer class="footer py-3 mt-auto shadow-lg">
+    @* Reduzi para py-2 para ser mais discreto *@
+    <footer class="footer py-2 mt-auto shadow-lg">
         <div class="container text-center text-md-start">
             <div class="row align-items-center">
-                <div class="col-md-6 mb-2 mb-md-0">
-                    <span class="small">&copy; 2026 - <span class="text-warning">StarChampionship</span> | FATEC Zona Leste</span>
+                <div class="col-md-6 mb-1 mb-md-0">
+                    <span class="small">&copy; 2026 - <span class="text-warning">StarChampionship</span> | Jhonathan Ferroni</span>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <a asp-area="" asp-controller="Home" asp-action="Privacy" class="text-muted text-decoration-none small mx-2">Privacidade</a>
-                    <span class="badge bg-secondary opacity-50">v3.0.4 - Render Build</span>
+                    <span class="badge bg-secondary opacity-50" style="font-size: 0.65rem;">v3.0.4</span>
                 </div>
             </div>
         </div>
