@@ -1,58 +1,55 @@
 ﻿@model StarChampionship.Models.Player
 
 @{
-    ViewData["Title"] = "Deletar Jogador";
+    ViewData["Title"] = "Remover Jogador";
 }
 
-<h2>@ViewData["Title"]</h2>
+<div class="container">
+    <h2 class="text-danger mb-4"><i class="fas fa-exclamation-triangle"></i> @ViewData["Title"]</h2>
 
-<h3 class="text-danger">Tem certeza que deseja remover este jogador?</h3>
+    <div class="card border-danger bg-dark shadow-lg">
+        <div class="card-header bg-danger text-white">
+            <h4 class="mb-0">Atenção: Esta ação não pode ser desfeita!</h4>
+        </div>
+        <div class="card-body text-white">
+            <div class="row align-items-center">
+                <div class="col-md-3 text-center border-end border-secondary">
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                        <img src="@Model.ImageUrl" alt="Foto de @Model.Name" class="img-thumbnail shadow-sm mb-2" style="width: 150px; height: 150px; object-fit: cover; border-radius: 50%; border: 3px solid #dc3545;" />
+                    }
+                    else
+                    {
+                        <div class="bg-secondary text-white d-flex align-items-center justify-content-center mx-auto mb-2 shadow-sm" style="width: 150px; height: 150px; border-radius: 50%;">
+                            <i class="fas fa-user-slash fa-4x"></i>
+                        </div>
+                    }
+                    <h3 class="text-warning mt-2">@Model.Overall.ToString("F0")</h3>
+                    <small class="text-muted">OVERALL</small>
+                </div>
 
-<div>
-    <h4>Ficha de Exclusão</h4>
-    <hr />
+                <div class="col-md-9">
+                    <h3 class="display-6">@Model.Name</h3>
+                    <p class="lead">Você está prestes a excluir permanentemente este jogador do campeonato.</p>
 
-    <div class="row">
-        <div class="col-sm-2">
-            @if (!string.IsNullOrEmpty(Model.ImageUrl))
-            {
-                <img src="@Model.ImageUrl" class="img-thumbnail" style="width: 120px; height: 120px; object-fit: cover; border-radius: 10px;" />
-            }
+                    <div class="alert alert-secondary bg-dark border-secondary mt-3">
+                        <i class="fas fa-info-circle text-info"></i>
+                        Todos os atributos técnicos e estatísticas associados a <strong>@Model.Name</strong> serão removidos do banco de dados.
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="col-sm-10">
-            <dl class="row">
-                <dt class="col-sm-3">
-                    @Html.DisplayNameFor(model => model.Name)
-                </dt>
-                <dd class="col-sm-9">
-                    @Html.DisplayFor(model => model.Name)
-                </dd>
-
-                <dt class="col-sm-3">
-                    Posição
-                </dt>
-                <dd class="col-sm-9">
-                    @Html.DisplayFor(model => model.Type)
-                </dd>
-
-                <dt class="col-sm-3">
-                    Overall
-                </dt>
-                <dd class="col-sm-9 text-primary font-weight-bold">
-                    @Model.Overall.ToString("F1")
-                </dd>
-
-                <dt class="col-sm-3">
-                    Time
-                </dt>
-            </dl>
+        <div class="card-footer bg-dark border-top border-secondary text-end p-3">
+            <form asp-action="Delete">
+                <input type="hidden" asp-for="Id" />
+                <button type="submit" class="btn btn-danger btn-lg shadow-sm fw-bold">
+                    <i class="fas fa-trash-alt"></i> Confirmar Exclusão
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary btn-lg shadow-sm">
+                    Cancelar e Voltar
+                </a>
+            </form>
         </div>
     </div>
-
-    <form asp-action="Delete" class="mt-4">
-        <input type="hidden" asp-for="Id" />
-        <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
-        <a asp-action="Index" class="btn btn-secondary">Cancelar e Voltar</a>
-    </form>
 </div>

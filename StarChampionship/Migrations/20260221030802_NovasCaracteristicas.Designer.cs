@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StarChampionship.Data;
 
@@ -10,9 +11,11 @@ using StarChampionship.Data;
 namespace StarChampionship.Migrations
 {
     [DbContext(typeof(StarChampionshipContext))]
-    partial class StarChampionshipContextModelSnapshot : ModelSnapshot
+    [Migration("20260221030802_NovasCaracteristicas")]
+    partial class NovasCaracteristicas
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

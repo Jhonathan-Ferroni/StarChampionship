@@ -14,14 +14,20 @@ namespace StarChampionship.Models
         [StringLength(60, MinimumLength = 3, ErrorMessage = "{0} size should be between {2} and {1}")]
         public string Name { get; set; }
 
-        public string Type { get; set; }
-
         [Display(Name = "Imagem (URL)")]
         public string? ImageUrl { get; set; }
 
         [Range(0, 100)]
         public double Shoot { get; set; }
 
+        [Range(0, 100)]
+        public double Dribble { get; set; }
+
+        [Range(0, 100)]
+        public double FirstTouch { get; set; }
+
+        [Range(0, 100)]
+        public double BallControl { get; set; }
 
         [Range(0, 100)]
         public double Defense { get; set; }
@@ -35,20 +41,22 @@ namespace StarChampionship.Models
         [Range(0, 100)]
         public double Strength { get; set; }
 
-        public double Overall => (Shoot + Defense + Pass + Speed + Strength) / 5;
+        public double Overall => Math.Round((Shoot + Dribble + FirstTouch + BallControl + Defense + Pass + Speed + Strength) / 8, 2);
 
         public Player()
         {
         }
 
         // Construtor atualizado incluindo ImageUrl
-        public Player(int id, string name, string type, string imageUrl, double shoot, double defense, double pass, double speed, double strength)
+        public Player(int id, string name, string? imageUrl, double shoot, double dribble, double firstTouch, double ballControl, double defense, double pass, double speed, double strength)
         {
             Id = id;
             Name = name;
-            Type = type;
             ImageUrl = imageUrl;
             Shoot = shoot;
+            Dribble = dribble;
+            FirstTouch = firstTouch;
+            BallControl = ballControl;
             Defense = defense;
             Pass = pass;
             Speed = speed;

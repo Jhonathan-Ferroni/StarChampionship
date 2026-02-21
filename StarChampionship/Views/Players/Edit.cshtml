@@ -5,96 +5,114 @@
     ViewData["Title"] = "Editar Jogador";
 }
 
-<h2>@ViewData["Title"]</h2>
+<div class="container">
+    <h2 class="text-primary"><i class="fas fa-user-edit"></i> @ViewData["Title"]</h2>
+    <h4>@Model.Name</h4>
+    <hr />
 
-<h4>Ficha do Jogador</h4>
-<hr />
+    <div class="row">
+        <div class="col-md-8">
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
 
-<div class="row">
-    <div class="col-md-6">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-        <form asp-action="Edit" method="post">
-
-            @Html.AntiForgeryToken()
-
-            <input type="hidden" asp-for="Id" />
-
-            <div asp-validation-summary="All" class="text-danger"></div>
-
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <label asp-for="Type" class="control-label">Tipo/Posição</label>
-                <input asp-for="Type" class="form-control" />
-                <span asp-validation-for="Type" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <label asp-for="ImageUrl" class="control-label"></label>
-                <input asp-for="ImageUrl" class="form-control" placeholder="URL da foto" />
-                <span asp-validation-for="ImageUrl" class="text-danger"></span>
-                @if (!string.IsNullOrEmpty(Model.ImageUrl))
-                {
-                    <div class="mt-2">
-                        <small>Preview atual:</small><br />
-                        <img src="@Model.ImageUrl" class="img-thumbnail" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%;" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="Name" class="control-label font-weight-bold">Nome do Jogador</label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
                     </div>
-                }
-            </div>
-
-            <div class="row mt-3">
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label asp-for="Shoot" class="control-label"></label>
-                        <input asp-for="Shoot" type="number" class="form-control" />
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="ImageUrl" class="control-label font-weight-bold">URL da Imagem</label>
+                            <input asp-for="ImageUrl" class="form-control" placeholder="http://link-da-foto.jpg" />
+                            <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label asp-for="Defense" class="control-label"></label>
-                        <input asp-for="Defense" type="number" class="form-control" />
+
+                <h5 class="mt-4 text-secondary border-bottom pb-2">Atributos Técnicos</h5>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="Shoot" class="control-label">Chute</label>
+                            <input asp-for="Shoot" type="number" class="form-control" />
+                        </div>
+                        <div class="form-group mt-2">
+                            <label asp-for="Dribble" class="control-label">Drible</label>
+                            <input asp-for="Dribble" type="number" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="FirstTouch" class="control-label">Domínio</label>
+                            <input asp-for="FirstTouch" type="number" class="form-control" />
+                        </div>
+                        <div class="form-group mt-2">
+                            <label asp-for="BallControl" class="control-label">Controle</label>
+                            <input asp-for="BallControl" type="number" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="Defense" class="control-label">Defesa</label>
+                            <input asp-for="Defense" type="number" class="form-control" />
+                        </div>
+                        <div class="form-group mt-2">
+                            <label asp-for="Pass" class="control-label">Passe</label>
+                            <input asp-for="Pass" type="number" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="Speed" class="control-label">Velocidade</label>
+                            <input asp-for="Speed" type="number" class="form-control" />
+                        </div>
+                        <div class="form-group mt-2">
+                            <label asp-for="Strength" class="control-label">Força</label>
+                            <input asp-for="Strength" type="number" class="form-control" />
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label asp-for="Pass" class="control-label"></label>
-                        <input asp-for="Pass" type="number" class="form-control" />
+
+                <div class="form-group mt-5">
+                    <button type="submit" class="btn btn-success btn-lg shadow-sm">
+                        <i class="fas fa-save"></i> Salvar Alterações
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary btn-lg shadow-sm">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card bg-light border-0 shadow-sm mt-2">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-muted">Preview Atual</h5>
+                    <hr />
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                        <img src="@Model.ImageUrl" class="img-thumbnail shadow" style="width: 150px; height: 150px; object-fit: cover; border-radius: 50%; border: 3px solid #198754;" />
+                    }
+                    else
+                    {
+                        <div class="bg-secondary text-white d-flex align-items-center justify-content-center mx-auto shadow" style="width: 150px; height: 150px; border-radius: 50%;">
+                            <i class="fas fa-user-slash fa-3x"></i>
+                        </div>
+                    }
+                    <div class="mt-4">
+                        <p class="mb-1 text-muted">Overall</p>
+                        <h2 class="display-4 font-weight-bold text-success">@Model.Overall.ToString("F0")</h2>
                     </div>
                 </div>
             </div>
-
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label asp-for="Speed" class="control-label"></label>
-                        <input asp-for="Speed" type="number" class="form-control" />
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label asp-for="Strength" class="control-label"></label>
-                        <input asp-for="Strength" type="number" class="form-control" />
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label class="control-label">Overall (Auto)</label>
-                        <input class="form-control" disabled value="@Model.Overall.ToString("F1")" />
-                    </div>
-                </div>
-            </div>
-
-
-            <div class="form-group mt-4">
-                <input type="submit" value="Salvar Alterações" class="btn btn-success" />
-                <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-            </div>
-
-        </form>
+        </div>
     </div>
 </div>
 
