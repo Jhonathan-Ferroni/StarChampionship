@@ -20,7 +20,6 @@ O projeto foi construído em **.NET / C#**, com interface server-side em **Razor
 - [Deploy no Render](#-deploy-no-render)
 - [Migrations e manutenção do banco](#-migrations-e-manutenção-do-banco)
 - [Estrutura de pastas](#-estrutura-de-pastas)
-- [Roadmap sugerido](#-roadmap-sugerido)
 
 ---
 
@@ -219,3 +218,4 @@ dotnet ef migrations add NomeDaMigration --project StarChampionship/StarChampion
 Projeto **Star Championship**, desenvolvido com foco em organização de times equilibrados e experiência web moderna com .NET + C#.
 
 ```
+Jhonathan Ferroni.
