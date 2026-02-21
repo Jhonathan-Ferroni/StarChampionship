@@ -2,11 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "**/StarChampionship.csproj",
+      "src": "StarChampionship/StarChampionship.csproj",
       "use": "vercel-dotnet"
     }
   ],
   "routes": [
+    {
+      "handle": "filesystem"
+    },
     {
       "src": "/(.*)",
       "dest": "/"
