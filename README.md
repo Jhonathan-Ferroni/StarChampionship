@@ -1,4 +1,3 @@
-```markdown
 # ⭐ Star Championship
 
 Aplicação web em **ASP.NET Core MVC** para cadastro de atletas e geração automática de times equilibrados com base em atributos técnicos.
