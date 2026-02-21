@@ -3,7 +3,7 @@
   "builds": [
     {
       "src": "StarChampionship/*.csproj",
-      "use": "@vercel/dotnet"
+      "use": "vercel-dotnet"
     }
   ],
   "routes": [
