@@ -1,318 +1,222 @@
-# SalesWebMvc
+```markdown
+# ⭐ Star Championship
 
-A complete **ASP.NET Core web application** focused on sales domain management, built with **Microsoft technologies**, **MVC architecture**, **Razor view templates**, and **MySQL persistence**.
+Aplicação web em **ASP.NET Core MVC** para cadastro de atletas e geração automática de times equilibrados com base em atributos técnicos.
 
-This project demonstrates a practical, structured CRUD system for managing business entities such as sellers and departments, while also modeling sales records and their relationships.
-
----
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Core Architecture](#core-architecture)
-- [Main Technologies](#main-technologies)
-- [CRUD Coverage](#crud-coverage)
-- [Domain Model](#domain-model)
-- [Project Structure](#project-structure)
-- [Database and MySQL Connection](#database-and-mysql-connection)
-- [Migrations](#migrations)
-- [Validation System](#validation-system)
-- [Async Operations and Delete Exception Handling](#async-operations-and-delete-exception-handling)
-- [Sales Search Navigation Views](#sales-search-navigation-views)
-- [How to Run the Project](#how-to-run-the-project)
-- [HTTP Routing](#http-routing)
-- [Seed Data](#seed-data)
-- [Future Implementations](#future-implementations)
+O projeto foi construído em **.NET / C#**, com interface server-side em **Razor (HTML)** e **Bootstrap**, persistência em **MySQL** via **Entity Framework Core + Pomelo**, containerização com **Docker** e preparo para deploy em **Render** conectado a banco **Aiven**.
 
 ---
 
-## Overview
+## 📌 Sumário
 
-**SalesWebMvc** is a server-rendered web system that follows the Model-View-Controller pattern to separate responsibilities clearly:
-
-- **Model**: domain entities and business structure.
-- **View**: `.cshtml` pages rendered with the Razor view engine.
-- **Controller**: HTTP endpoints and flow coordination.
-
-The application uses **Entity Framework Core** for ORM access and is configured to run with a **MySQL** database through **Pomelo + MySqlConnector**.
-
----
-
-## Core Architecture
-
-### MVC (Model-View-Controller)
-
-The project follows classic MVC composition:
-
-- `Controllers/` handles incoming requests and action methods.
-- `Models/` contains entities, enums, and view models.
-- `Views/` contains Razor templates used to render server-side HTML.
-
-This structure supports maintainability and explicit separation between:
-
-- business/domain data,
-- request logic,
-- and UI rendering.
-
-### Razor Views (`.cshtml`)
-
-The UI layer is built using Razor syntax in view files under `Views/`.
-
-Examples:
-
-- `Views/Sellers/*.cshtml`
-- `Views/Departments/*.cshtml`
-- shared layout in `Views/Shared/_Layout.cshtml`
-
-### Service Layer
-
-In addition to MVC, the project includes application services:
-
-- `SellerService`
-- `DepartmentService`
-- `SeedingService`
-
-These classes centralize domain operations and data access orchestration for cleaner controller code.
+- [Visão geral](#-visão-geral)
+- [Funcionalidades principais](#-funcionalidades-principais)
+- [Tecnologias utilizadas](#-tecnologias-utilizadas)
+- [Arquitetura da aplicação](#-arquitetura-da-arquitetura)
+- [Modelo de dados](#-modelo-de-dados)
+- [Interface e experiência visual](#-interface-e-experiência-visual)
+- [Execução local (sem Docker)](#-execução-local-sem-docker)
+- [Execução com Docker](#-execução-com-docker)
+- [Banco de dados MySQL (Aiven)](#-banco-de-dados-mysql-aiven)
+- [Deploy no Render](#-deploy-no-render)
+- [Migrations e manutenção do banco](#-migrations-e-manutenção-do-banco)
+- [Estrutura de pastas](#-estrutura-de-pastas)
+- [Roadmap sugerido](#-roadmap-sugerido)
 
 ---
 
-## Main Technologies
+## 🎯 Visão geral
 
-### Microsoft Framework Stack
+O **Star Championship** resolve um problema comum em jogos e peladas: montar dois times com níveis parecidos de habilidade.
 
-- **ASP.NET Core** (Web SDK)
-- **ASP.NET Core MVC** (`AddControllersWithViews`)
-- **Razor view engine** for server-side rendered pages
-- **Dependency Injection** (built-in container)
-- **Request Localization** (`en-US` configured)
+A aplicação permite:
+1. Cadastrar jogadores com foto e atributos.
+2. Calcular automaticamente o **Overall** de cada atleta.
+3. Selecionar um conjunto de jogadores para o sorteio.
+4. Gerar duas equipes com a menor diferença possível de força total.
+5. Refinar o balanceamento usando uma margem de diferença personalizada.
 
-### Data and Persistence
+Tudo isso em uma interface web responsiva, com navegação simples e foco em produtividade.
 
+---
+
+## 🚀 Funcionalidades principais
+
+### 1) Gestão completa de jogadores (CRUD)
+- **Criar** atleta com nome, URL de imagem e atributos técnicos.
+- **Listar** jogadores com ranking e destaque de top características.
+- **Visualizar detalhes** individuais.
+- **Editar** informações.
+- **Excluir** registro.
+
+### 2) Cálculo de Overall automático
+O `Overall` é calculado como a média dos 8 atributos cadastrados:
+- Shoot
+- Dribble
+- First Touch
+- Ball Control
+- Defense
+- Pass
+- Speed
+- Strength
+
+### 3) Gerador de times equilibrados
+No módulo **Gerador**:
+- O usuário seleciona os jogadores;
+- Define uma margem de equilíbrio;
+- O sistema executa múltiplas tentativas aleatórias para encontrar a melhor divisão;
+- Exibe os dois times, somatório por equipe e diferença final.
+
+### 4) Ajuste rápido da margem
+Na tela de resultado, é possível “re-sortear” com nova margem sem precisar refazer toda a seleção.
+
+---
+
+## 🧰 Tecnologias utilizadas
+
+### Back-end
+- **.NET 8**
+- **C#**
+- **ASP.NET Core MVC**
+- **Razor Views**
+- **Dependency Injection** nativa do ASP.NET
+
+### Dados
 - **Entity Framework Core 9**
-- **Pomelo.EntityFrameworkCore.MySql** (MySQL provider for EF Core)
-- **MySqlConnector** (MySQL driver)
-- **EF Core Migrations** for schema evolution
+- **Pomelo.EntityFrameworkCore.MySql**
+- **MySqlConnector**
+- **MySQL**
 
 ### Front-end
+- **HTML (Razor .cshtml)**
+- **Bootstrap** (tema custom + responsividade)
+- **Bootstrap Icons**
+- **jQuery** e validação unobtrusive
 
-- **Bootstrap** (UI styling and layout)
-- **jQuery**
-- **jQuery Validation + Unobtrusive Validation**
-
-### Runtime
-
-- **.NET 10.0** target framework (`net10.0`)
-
----
-
-## CRUD Coverage
-
-The project implements CRUD workflows for key entities.
-
-### Sellers
-
-`SellersController` supports:
-
-- **Create** seller
-- **Read** seller list and details
-- **Update** seller information
-- **Delete** seller
-
-The seller flow includes service-based operations and integration with departments.
-
-### Departments
-
-`DepartmentsController` supports:
-
-- **Create** department
-- **Read** department list and details
-- **Update** department
-- **Delete** department
-
-This controller demonstrates a full scaffolded CRUD path with async EF Core operations.
+### Infra e deploy
+- **Docker** (build/publish multi-stage)
+- **Render** (hospedagem da aplicação web)
+- **Aiven** (MySQL gerenciado na nuvem)
 
 ---
 
-## Domain Model
+## 🏛️ Arquitetura da aplicação
 
-### Entities
-
-- **Department**
-  - Has many `Seller`
-- **Seller**
-  - Belongs to one `Department`
-  - Has many `SalesRecord`
-- **SalesRecord**
-  - Linked to one `Seller`
-  - Uses `SaleStatus` enum for business state
-
-### Enumerations
-
-- `SaleStatus`
-  - `Pending`
-  - `Billed`
-  - `Canceled`
+A solução segue o padrão **MVC**:
+- `Controllers/` → fluxo HTTP e regras de entrada/saída.
+- `Models/` → entidades e validações.
+- `Views/` → páginas Razor renderizadas no servidor.
+- `Services/` → regras de negócio e acesso organizado ao contexto.
+- `Data/` → `DbContext` e seeding.
 
 ---
 
-## Project Structure
+## 🗃️ Modelo de dados
 
-```text
-SalesWebMvc/
-├── Controllers/
-├── Data/
-│   ├── SalesWebMvcContext.cs
-│   └── SeedingService.cs
-├── Migrations/
-├── Models/
-│   ├── Enums/
-│   └── ViewModels/
-├── Services/
-│   └── Exceptions/
-├── Views/
-│   ├── Departments/
-│   ├── Sellers/
-│   ├── Shared/
-│   └── Home/
-├── wwwroot/
-└── Program.cs
+### Entidade principal: `Player`
+Campos principais:
+- `Id`, `Name`, `ImageUrl` (opcional).
+- Atributos técnicos (0 a 100).
+- `Overall` (calculado).
+
+---
+
+## ▶️ Execução local (sem Docker)
+
+### Pré-requisitos
+- .NET SDK 8+
+- MySQL disponível (local ou remoto)
+
+### 1) Clonar
+```bash
+git clone <url-do-repositorio>
+cd StarChampionship
+
 ```
 
----
+### 2) Configurar connection string
 
-## Database and MySQL Connection
-
-The application uses a connection string entry named:
-
-- `SalesWebMvcContext`
-
-Default local example in `appsettings.json`:
+Em `StarChampionship/appsettings.json`, preencha:
 
 ```json
 "ConnectionStrings": {
-  "SalesWebMvcContext": "server=localhost;userid=YOUR_USER;password=YOUR_PASSWORD;database=saleswebmvcappdb"
+  "StarChampionshipContext": "server=SEU_HOST;port=3306;database=SEU_DB;user=SEU_USER;password=SUA_SENHA"
 }
+
 ```
 
-EF Core setup is registered in `Program.cs` with:
-
-- `UseMySql(...)`
-- `ServerVersion.AutoDetect(...)`
-- `MigrationsAssembly("SalesWebMvc")`
-
----
-
-## Migrations
-
-The repository already includes migration history in `SalesWebMvc/Migrations/`.
-
-To apply migrations to the configured MySQL database:
+### 3) Restaurar e executar
 
 ```bash
-dotnet ef database update --project SalesWebMvc
+dotnet restore StarChampionship/StarChampionship.csproj
+dotnet run --project StarChampionship/StarChampionship.csproj
+
 ```
 
-To create a new migration:
+---
+
+## 🐳 Execução com Docker
+
+O repositório já inclui `Dockerfile` multi-stage.
+
+### Build da imagem
 
 ```bash
-dotnet ef migrations add <MigrationName> --project SalesWebMvc
+docker build -t starchampionship .
+
 ```
 
----
-## Validation System
-
-The project includes a layered validation approach:
-
-- **Server-side validation** through model validation attributes and MVC model binding checks.
-- **Client-side validation** using **jQuery Validation** + **Unobtrusive Validation**, providing immediate feedback in forms.
-
-This helps keep invalid data from being submitted and improves UX by showing validation messages early.
-
----
-
-## Async Operations and Delete Exception Handling
-
-The project also applies recent reliability improvements:
-
-- **Asynchronous operations (`async` / `await`)** are used across service/controller flows to keep I/O-bound operations non-blocking and improve scalability under concurrent requests.
-- **Delete exception handling** was added to protect delete flows and return controlled application behavior when integrity constraints or related-record conflicts occur.
-
----
-
-## Sales Search Navigation Views
-
-The project now includes dedicated sales search navigation views to improve how users explore sales data:
-
-- **Simple Search** for quick filtering with a streamlined navigation path.
-- **Grouping Search** for aggregated and grouped visualization of sales results.
-
-These views make sales consultation more intuitive while keeping navigation aligned with the MVC flow.
-
----
-
-## How to Run the Project
-
-### Prerequisites
-
-- .NET SDK compatible with `net10.0`
-- MySQL server available
-- Connection string configured in `SalesWebMvc/appsettings.json`
-
-### Steps
-
-1. Restore dependencies:
+### Run do container
 
 ```bash
-dotnet restore SalesWebMvc/SalesWebMvc.csproj
+docker run --rm -p 10000:10000 \
+  -e ConnectionStrings__StarChampionshipContext="server=SEU_HOST;port=3306;database=SEU_DB;user=SEU_USER;password=SUA_SENHA" \
+  starchampionship
+
 ```
 
-2. Apply migrations:
-
-```bash
-dotnet ef database update --project SalesWebMvc
-```
-
-3. Run the app:
-
-```bash
-dotnet run --project SalesWebMvc/SalesWebMvc.csproj
-```
-
-4. Open the URL shown in the terminal (for example, `https://localhost:<port>`).
+A aplicação ficará disponível em `http://localhost:10000`.
 
 ---
 
-## HTTP Routing
+## 🧪 Migrations e manutenção do banco
 
-The default route is configured as:
+```bash
+# Atualizar banco
+dotnet ef database update --project StarChampionship/StarChampionship.csproj
+
+# Criar nova migration
+dotnet ef migrations add NomeDaMigration --project StarChampionship/StarChampionship.csproj
+
+```
+
+---
+
+## 📁 Estrutura de pastas
 
 ```text
-{controller=Home}/{action=Index}/{id?}
+.
+├── Dockerfile
+├── README.md
+└── StarChampionship/
+    ├── Controllers/
+    ├── Data/
+    ├── Migrations/
+    ├── Models/
+    ├── Services/
+    ├── Views/
+    ├── wwwroot/
+    ├── Program.cs
+    ├── appsettings.json
+    └── StarChampionship.csproj
+
 ```
 
-This means:
-
-- Home page: `/`
-- Sellers page: `/Sellers`
-- Departments page: `/Departments`
-
 ---
 
-## Seed Data
 
-On startup, `SeedingService` checks whether the database already has records.
-If not, it inserts:
+## 👨‍💻 Autor
 
-- Departments
-- Sellers
-- Sales records
+Projeto **Star Championship**, desenvolvido com foco em organização de times equilibrados e experiência web moderna com .NET + C#.
 
-This enables immediate local testing with realistic sample data.
-
----
-
-## Future Implementations
-
-> Reserved space for upcoming project evolution.
-
-
+```
