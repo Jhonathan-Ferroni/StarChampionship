@@ -19,7 +19,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 //Addscoped
 
-builder.Services.AddScoped<SeedingService>();
 builder.Services.AddScoped<PlayerService>();
 
 

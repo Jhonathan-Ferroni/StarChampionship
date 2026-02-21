@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "*.csproj",
+      "src": "StarChampionship/*.csproj",
       "use": "@vercel/dotnet"
     }
   ],
