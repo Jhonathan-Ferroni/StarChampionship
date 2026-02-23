@@ -29,6 +29,16 @@ namespace StarChampionship.Controllers
         [HttpPost]
         public async Task<IActionResult> Generate(int[] selectedIds, int numberOfTeams, bool hasFixedCaptains, Dictionary<int, int?> selectedCaptains, double margin = 2.0)
         {
+            if (!hasFixedCaptains || selectedCaptains == null)
+            {
+                selectedCaptains = new Dictionary<int, int?>();
+            }
+
+            if (selectedIds == null || selectedIds.Length < numberOfTeams)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
             if (selectedIds == null || selectedIds.Length < numberOfTeams)
             {
                 // Adicione uma mensagem de erro aqui se desejar (TempData)

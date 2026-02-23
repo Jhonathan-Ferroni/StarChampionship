@@ -26,7 +26,8 @@ namespace StarChampionship.Services
                 int teamId = selection.Key;
                 int? playerId = selection.Value;
 
-                if (playerId.HasValue)
+                // Só processa se houver um jogador selecionado (não for "-- Sem Capitão --")
+                if (playerId.HasValue && playerId.Value > 0)
                 {
                     var captain = remainingPlayers.FirstOrDefault(p => p.Id == playerId.Value);
                     if (captain != null)

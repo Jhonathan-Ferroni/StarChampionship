@@ -162,17 +162,20 @@
                 captainsSection.classList.remove('d-none');
                 captainsContainer.innerHTML = '';
 
-                const selectedPlayers = Array.from(document.querySelectorAll('.player-checkbox:checked'))
-                    .map(cb => ({ id: cb.value, name: cb.getAttribute('data-name') }));
+                // Usamos um Map para garantir IDs únicos e nomes limpos
+                const selectedPlayersMap = new Map();
+                document.querySelectorAll('.player-checkbox:checked').forEach(cb => {
+                    selectedPlayersMap.set(cb.value, cb.getAttribute('data-name'));
+                });
 
                 for (let i = 1; i <= numTeams; i++) {
                     let options = '<option value="">-- Sem Capitão --</option>';
-                    selectedPlayers.forEach(p => {
-                        options += `<option value="${p.id}">${p.name}</option>`;
+                    selectedPlayersMap.forEach((name, id) => {
+                        options += `<option value="${id}">${name}</option>`;
                     });
 
                     captainsContainer.innerHTML += `
-                        <div class="col-md-4 col-6">
+                        <div class="col-md-4 col-6 mb-2">
                             <label class="text-muted small">Time ${i}</label>
                             <select name="selectedCaptains[${i}]" class="form-select form-select-sm bg-dark text-white border-secondary">
                                 ${options}
@@ -182,6 +185,7 @@
                 }
             } else {
                 captainsSection.classList.add('d-none');
+                captainsContainer.innerHTML = ''; // Limpa para evitar envios fantasmas
             }
         }
 
