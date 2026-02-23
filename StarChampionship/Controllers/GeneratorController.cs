@@ -13,7 +13,6 @@ namespace StarChampionship.Controllers
         private readonly PlayerService _playerService;
         private readonly GeneratorService _generatorService;
 
-        // Injetamos o novo GeneratorService no construtor
         public GeneratorController(PlayerService playerService, GeneratorService generatorService)
         {
             _playerService = playerService;
@@ -29,45 +28,41 @@ namespace StarChampionship.Controllers
         [HttpPost]
         public async Task<IActionResult> Generate(int[] selectedIds, int numberOfTeams, bool hasFixedCaptains, Dictionary<int, int?> selectedCaptains, double margin = 2.0)
         {
-            if (!hasFixedCaptains || selectedCaptains == null)
+            // 1. Tratamento de Erro: Se não houver jogadores selecionados o suficiente
+            if (selectedIds == null || selectedIds.Length < numberOfTeams || numberOfTeams < 2)
             {
-                selectedCaptains = new Dictionary<int, int?>();
-            }
-
-            if (selectedIds == null || selectedIds.Length < numberOfTeams)
-            {
+                TempData["Error"] = "Selecione atletas suficientes para a quantidade de times.";
                 return RedirectToAction(nameof(Index));
             }
 
-            if (selectedIds == null || selectedIds.Length < numberOfTeams)
-            {
-                // Adicione uma mensagem de erro aqui se desejar (TempData)
-                return RedirectToAction(nameof(Index));
-            }
+            // 2. Correção do BUG: Normaliza o dicionário de capitães
+            // Se a função estiver desligada OU o dicionário vier nulo, inicializamos um vazio
+            // Isso evita o erro de referência nula no loop e no serviço
+            var captainsToProcess = (hasFixedCaptains && selectedCaptains != null)
+                                    ? selectedCaptains
+                                    : new Dictionary<int, int?>();
 
             var allPlayers = await _playerService.FindAllAsync();
             var selectedPlayers = allPlayers.Where(p => selectedIds.Contains(p.Id)).ToList();
 
             List<Team> bestGeneration = null;
             double minVariance = double.MaxValue;
-
             Random rand = new Random();
 
-            // Mantemos sua lógica de 1000 tentativas para buscar o melhor equilíbrio
+            // 3. Lógica de Equilíbrio (1000 tentativas)
             for (int i = 0; i < 1000; i++)
             {
-                // Embaralhamos a lista para que a distribuição gulosa varie a cada iteração
                 var shuffledPlayers = selectedPlayers.OrderBy(x => rand.Next()).ToList();
 
-                // Chamamos o serviço que já lida com os capitães fixos
-                var currentTeams = _generatorService.BuildBalancedTeams(shuffledPlayers, numberOfTeams, selectedCaptains);
+                // Passamos o captainsToProcess (que nunca será nulo agora)
+                var currentTeams = _generatorService.BuildBalancedTeams(shuffledPlayers, numberOfTeams, captainsToProcess);
 
-                // Calculamos a diferença entre o time mais forte e o mais fraco (Variância)
+                if (currentTeams == null || !currentTeams.Any()) continue;
+
                 double maxOverall = currentTeams.Max(t => t.TotalOverall);
                 double minOverall = currentTeams.Min(t => t.TotalOverall);
                 double diff = maxOverall - minOverall;
 
-                // Se atingir a margem desejada, interrompemos e retornamos esse resultado
                 if (diff <= margin)
                 {
                     bestGeneration = currentTeams;
@@ -82,7 +77,7 @@ namespace StarChampionship.Controllers
                 }
             }
 
-            // Passamos os dados para a View de Resultado
+            // 4. Preparação dos dados para a View de Resultado
             ViewBag.Teams = bestGeneration;
             ViewBag.Difference = minVariance;
             ViewBag.SelectedIds = selectedIds;

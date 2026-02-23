@@ -1,183 +1,309 @@
-﻿@using StarChampionship.Models
-@{
-    ViewData["Title"] = "Times Formados";
-    var teams = ViewBag.Teams as List<Team>;
-    var difference = (double)ViewBag.Difference;
-    var margin = (double)ViewBag.Margin;
-    var numberOfTeams = (int)ViewBag.NumberOfTeams;
+﻿@model IEnumerable<StarChampionship.Models.Player>
 
-    // Cores para os cards (rotativas)
-    string[] borderColors = { "border-primary", "border-danger", "border-success", "border-warning", "border-info" };
-    string[] headerColors = { "bg-primary", "bg-danger", "bg-success", "bg-warning text-dark", "bg-info text-dark" };
+@{
+    ViewData["Title"] = "Gerador de Times";
 }
 
 <div class="container mt-4">
-    @* Cabeçalho de Status *@
-    <div class="text-center mb-4">
-        <h2 class="text-white"><i class="bi bi-shield-shaded text-info"></i> Confronto Equilibrado</h2>
-        <div class="d-flex justify-content-center mt-3">
-            <div class="alert @(difference <= margin ? "alert-success" : "alert-warning") border-0 shadow-sm px-4 py-2">
-                <span class="fw-bold">
-                    @(difference <= margin ? "✅ EQUILÍBRIO ALCANÇADO" : "⚠️ DIFERENÇA ALTA")
-                </span>
-                <span class="mx-2 text-muted">|</span>
-                <small>Diferença Máxima: <strong>@difference.ToString("F1")</strong> pts</small>
-            </div>
+    @* Cabeçalho Responsivo *@
+    <div class="row align-items-center border-bottom border-secondary pb-3 mb-4">
+        <div class="col-8">
+            <h2 class="text-white mb-0"><i class="bi bi-cpu text-info"></i> <span class="d-none d-sm-inline">@ViewData["Title"]</span><span class="d-inline d-sm-none">Gerador</span></h2>
+        </div>
+        <div class="col-4 text-end">
+            <button type="submit" form="generator-form" class="btn btn-success shadow-sm btn-sm btn-md-grow">
+                <i class="bi bi-shuffle"></i> <span class="d-none d-md-inline">Gerar Equipes</span><span class="d-inline d-md-none">Gerar</span>
+            </button>
         </div>
     </div>
 
-    @* Área Dinâmica dos Times *@
-    <div class="row g-4 justify-content-center">
-        @for (int i = 0; i < teams.Count; i++)
-        {
-            var t = teams[i];
-            var colorIndex = i % borderColors.Length;
+    <form asp-action="Generate" method="post" id="generator-form">
 
-            <div class="col-12 col-md-6 col-lg-4">
-                <div class="card bg-dark @borderColors[colorIndex] shadow h-100">
-                    <div class="card-header @headerColors[colorIndex] bg-gradient d-flex justify-content-between align-items-center py-2">
-                        <h5 class="mb-0 fw-bold">@t.Name</h5>
-                        <span class="badge bg-white text-dark fw-bold">Σ @t.TotalOverall.ToString("F1")</span>
-                    </div>
-                    <div class="card-body p-0">
-                        <ul class="list-group list-group-flush">
-                            @foreach (var p in t.Players)
-                            {
-                                <li class="list-group-item bg-dark border-secondary d-flex align-items-center justify-content-between py-2">
-                                    <div class="d-flex align-items-center">
-                                        <img src="@(string.IsNullOrEmpty(p.ImageUrl) ? "https://cdn-icons-png.flaticon.com/512/166/166344.png" : p.ImageUrl)"
-                                             class="rounded-circle border border-secondary me-3" style="width: 38px; height: 38px; object-fit: cover;">
-                                        <div>
-                                            <h6 class="text-white mb-0 small">@p.Name</h6>
-                                            <small class="text-info" style="font-size: 0.6rem;">Overall: @p.Overall.ToString("F1")</small>
-                                        </div>
-                                    </div>
-                                    @* Ícone de estrela se for o capitão (opcional, se você quiser marcar) *@
-                                    <i class="bi bi-person-fill text-muted opacity-50"></i>
-                                </li>
-                            }
-                        </ul>
-                    </div>
-                    <div class="card-footer bg-dark border-top border-secondary text-center py-1">
-                        <small class="text-muted" style="font-size: 0.7rem;">Média: @t.AverageOverall.ToString("F1")</small>
+        @* --- Painel de Configurações --- *@
+        <div class="row g-3 mb-4">
+            @* Rigor do Equilíbrio *@
+            <div class="col-md-6">
+                <div class="card bg-dark shadow-sm border-secondary h-100">
+                    <div class="card-body py-3">
+                        <label for="marginRange" class="form-label fw-bold text-white mb-1 small">
+                            <i class="bi bi-sliders text-info"></i> Rigor do Equilíbrio:
+                            <span id="marginValue" class="badge bg-success ms-2">2.0</span>
+                        </label>
+                        <input type="range" name="margin" class="form-range" min="0" max="50" step="0.5" value="2.0" id="marginRange">
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted" style="font-size: 0.65rem;">0.0 (Pro)</small>
+                            <small class="text-muted" style="font-size: 0.65rem;">50.0 (Várzea)</small>
+                        </div>
                     </div>
                 </div>
             </div>
-        }
-    </div>
 
-    @* Controles Inferiores *@
-    <div class="mt-5 text-center">
-        <div class="row justify-content-center g-3">
-            <div class="col-12 col-md-8 col-lg-6">
-                <div class="card bg-dark border-secondary p-3 shadow-sm">
-                    <form asp-action="Generate" method="post">
-                        @* Preserva os IDs selecionados e o número de times *@
-                        @foreach (var id in (int[])ViewBag.SelectedIds)
-                        {
-                            <input type="hidden" name="selectedIds" value="@id" />
-                        }
-                        <input type="hidden" name="numberOfTeams" value="@numberOfTeams" />
-
-                        <div class="row align-items-end g-2">
-                            <div class="col-8">
-                                <label class="form-label text-white small mb-1">Ajustar Rigor e Tentar Novamente:</label>
-                                <div class="input-group input-group-sm">
-                                    <span class="input-group-text bg-secondary border-secondary text-white"><i class="bi bi-sliders"></i></span>
-                                    <input type="number" name="margin" step="0.5" value="@margin" class="form-control bg-dark border-secondary text-white text-center fw-bold" />
+            @* Quantidade de Times e Capitães *@
+            <div class="col-md-6">
+                <div class="card bg-dark shadow-sm border-secondary h-100">
+                    <div class="card-body py-3">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="form-label fw-bold text-white small"><i class="bi bi-people text-info"></i> Times:</label>
+                                <input type="number" name="numberOfTeams" id="numberOfTeams" class="form-control form-control-sm bg-dark text-white border-secondary" min="2" max="10" value="2">
+                            </div>
+                            <div class="col-6 d-flex align-items-end">
+                                <div class="form-check form-switch mb-1">
+                                    <input class="form-check-input" type="checkbox" name="hasFixedCaptains" id="hasFixedCaptains" value="true">
+                                    <label class="form-check-label text-white small" for="hasFixedCaptains">Fixar Capitães</label>
                                 </div>
                             </div>
-                            <div class="col-4">
-                                <button type="submit" class="btn btn-sm btn-success w-100 py-2 shadow-sm">
-                                    <i class="bi bi-arrow-repeat"></i> Re-sortear
-                                </button>
-                            </div>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="mt-4 pb-5">
-            <a asp-action="Index" class="btn btn-outline-light px-4">
-                <i class="bi bi-arrow-left"></i> Nova Seleção
-            </a>
-
-            @* Botão WhatsApp *@
-            <button class="btn btn-success px-4 ms-md-2 mt-2 mt-md-0 shadow" onclick="shareToWhatsApp()">
-                <i class="bi bi-whatsapp"></i> Enviar p/ WhatsApp
-            </button>
-
-            <button class="btn btn-info px-4 ms-md-2 mt-2 mt-md-0 shadow text-dark fw-bold" onclick="window.print()">
-                <i class="bi bi-printer"></i> Imprimir
-            </button>
+        @* --- Seção Dinâmica de Capitães --- *@
+        <div id="captains-section" class="card bg-dark border-info mb-4 d-none">
+            <div class="card-header py-2 bg-info bg-opacity-10 text-info small fw-bold">
+                <i class="bi bi-star-fill"></i> Designar Capitães
+            </div>
+            <div class="card-body py-3">
+                <div id="captains-container" class="row g-2">
+                    @* Gerado dinamicamente via JavaScript *@
+                </div>
+            </div>
         </div>
-    </div>
+
+        @* Lista de Atletas *@
+        <div class="card shadow-sm border-secondary">
+            <div class="card-header bg-primary py-2 d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 text-white">Atletas Disponíveis</h6>
+                <span id="selected-count" class="badge bg-info text-dark fw-bold">0 selecionados</span>
+            </div>
+
+            <div class="card-body p-0 bg-dark">
+                @* VISÃO DESKTOP *@
+                <div class="table-responsive d-none d-md-block">
+                    <table class="table table-dark table-hover align-middle mb-0" style="font-size: 0.9rem;">
+                        <thead>
+                            <tr class="table-active">
+                                <th style="width: 50px;" class="text-center">
+                                    <input type="checkbox" id="selectAllDesktop" class="form-check-input select-all-btn" />
+                                </th>
+                                <th style="width: 60px;">Foto</th>
+                                <th>Nome</th>
+                                <th class="text-center" style="width: 100px;">Overall</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="text-center">
+                                        <input type="checkbox" name="selectedIds" value="@item.Id" data-name="@item.Name" class="form-check-input player-checkbox" />
+                                    </td>
+                                    <td>
+                                        <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "https://cdn-icons-png.flaticon.com/512/166/166344.png" : item.ImageUrl)"
+                                             class="rounded-circle border border-secondary" style="width: 35px; height: 35px; object-fit: cover;" />
+                                    </td>
+                                    <td class="text-white fw-bold">@item.Name</td>
+                                    <td class="text-center">
+                                        <span class="badge @(item.Overall >= 80 ? "bg-success" : "bg-info") text-dark fw-bold">@item.Overall.ToString("F1")</span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @* VISÃO MOBILE *@
+                <div class="d-md-none p-2">
+                    @foreach (var item in Model)
+                    {
+                        <div class="player-card-mobile bg-secondary bg-opacity-10 border border-secondary rounded p-2 mb-2 shadow-sm" style="cursor: pointer;">
+                            <div class="row align-items-center g-0">
+                                <div class="col-2 text-center">
+                                    <input type="checkbox" name="selectedIds" value="@item.Id" data-name="@item.Name" class="form-check-input player-checkbox">
+                                </div>
+                                <div class="col-2 text-center">
+                                    <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "https://cdn-icons-png.flaticon.com/512/166/166344.png" : item.ImageUrl)"
+                                         class="rounded-circle" style="width: 35px; height: 35px; object-fit: cover;" />
+                                </div>
+                                <div class="col-6 ps-2">
+                                    <div class="text-white fw-bold small">@item.Name</div>
+                                </div>
+                                <div class="col-2 text-end">
+                                    <span class="badge @(item.Overall >= 80 ? "bg-success" : "bg-info") text-dark fw-bold" style="font-size: 0.75rem;">@item.Overall.ToString("F1")</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="card-footer bg-dark border-top border-secondary py-2">
+                <small class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-info-circle text-info"></i> Selecione os atletas e configure as regras antes de gerar.</small>
+            </div>
+        </div>
+    </form>
 </div>
 
+@section Scripts {
+    <script>
+        const marginRange = document.getElementById('marginRange');
+        const marginValue = document.getElementById('marginValue');
+        const numTeamsInput = document.getElementById('numberOfTeams');
+        const captainsSwitch = document.getElementById('hasFixedCaptains');
+        const captainsSection = document.getElementById('captains-section');
+        const captainsContainer = document.getElementById('captains-container');
+        const checkboxes = document.querySelectorAll('.player-checkbox');
+        const countBadge = document.getElementById('selected-count');
+
+        // Atualiza valor visual da margem
+        marginRange.addEventListener('input', function() {
+            marginValue.innerText = parseFloat(this.value).toFixed(1);
+            marginValue.className = `badge ms-2 ${this.value <= 2 ? 'bg-success' : this.value <= 5 ? 'bg-warning text-dark' : 'bg-danger'}`;
+        });
+
+        // Lógica de capitães dinâmicos corrigida para evitar duplicatas
+        function updateCaptainsUI() {
+            const numTeams = parseInt(numTeamsInput.value);
+            const showCaptains = captainsSwitch.checked;
+
+            if (showCaptains) {
+                captainsSection.classList.remove('d-none');
+                captainsContainer.innerHTML = '';
+
+                // Usamos um Map para garantir que cada ID de jogador apareça apenas uma vez,
+                // filtrando checkboxes duplicados da visão Mobile/Desktop
+                const selectedPlayersMap = new Map();
+                document.querySelectorAll('.player-checkbox:checked').forEach(cb => {
+                    selectedPlayersMap.set(cb.value, cb.getAttribute('data-name'));
+                });
+
+                for (let i = 1; i <= numTeams; i++) {
+                    let options = '<option value="0">-- Sem Capitão --</option>';
+                    selectedPlayersMap.forEach((name, id) => {
+                        options += `<option value="${id}">${name}</option>`;
+                    });
+
+                    captainsContainer.innerHTML += `
+                        <div class="col-md-4 col-6 mb-2">
+                            <label class="text-muted small">Time ${i}</label>
+                            <select name="selectedCaptains[${i}]" class="form-select form-select-sm bg-dark text-white border-secondary">
+                                ${options}
+                            </select>
+                        </div>
+                    `;
+                }
+            } else {
+                captainsSection.classList.add('d-none');
+                captainsContainer.innerHTML = '';
+            }
+        }
+
+        // Eventos de alteração de configuração
+        numTeamsInput.addEventListener('change', updateCaptainsUI);
+        captainsSwitch.addEventListener('change', updateCaptainsUI);
+
+        // Lógica de seleção de jogadores com sincronia Mobile/Desktop
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', () => {
+                // Sincroniza checkbox mobile/desktop do mesmo jogador
+                document.querySelectorAll(`.player-checkbox[value="${cb.value}"]`).forEach(c => c.checked = cb.checked);
+
+                const uniqueSelected = new Set([...document.querySelectorAll('.player-checkbox:checked')].map(c => c.value)).size;
+                countBadge.innerText = `${uniqueSelected} selecionados`;
+                countBadge.className = uniqueSelected > 0 ? 'badge bg-warning text-dark fw-bold' : 'badge bg-info text-dark fw-bold';
+
+                updateCaptainsUI();
+            });
+        });
+
+        // Selecionar Todos
+        document.querySelectorAll('.select-all-btn').forEach(btn => {
+            btn.addEventListener('change', function() {
+                checkboxes.forEach(cb => cb.checked = this.checked);
+
+                const uniqueSelected = new Set([...document.querySelectorAll('.player-checkbox:checked')].map(c => c.value)).size;
+                countBadge.innerText = `${uniqueSelected} selecionados`;
+
+                updateCaptainsUI();
+            });
+        });
+
+        // Clique no card mobile (UX aprimorada)
+        document.querySelectorAll('.player-card-mobile').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (e.target.type !== 'checkbox') {
+                    const cb = card.querySelector('.player-checkbox');
+                    cb.checked = !cb.checked;
+                    cb.dispatchEvent(new Event('change'));
+                }
+            });
+        });
+    </script>
+}
+
 <style>
-    .bg-dark {
-        background-color: #1a1d20 !important;
+    /* Estilo para os Cards Mobile */
+    .player-card-mobile {
+        transition: all 0.2s ease;
+        user-select: none;
     }
 
-    .list-group-item {
-        border-color: rgba(255,255,255,0.05) !important;
+        .player-card-mobile:active {
+            transform: scale(0.98);
+            background-color: rgba(255, 255, 255, 0.05) !important;
+        }
+
+    /* Ajuste para o Slider de Rigor */
+    .form-range::-webkit-slider-thumb {
+        background: #0dcaf0;
     }
 
-    @@media print {
-        .btn, .alert, form, .mt-5 {
-            display: none !important;
+    .form-range::-moz-range-thumb {
+        background: #0dcaf0;
+    }
+
+    /* Customização da Tabela Dark */
+    .table-dark {
+        --bs-table-bg: #1a1d20;
+        --bs-table-border-color: #373b3e;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    /* Checkbox maior para facilitar o clique */
+    .form-check-input {
+        width: 1.2em;
+        height: 1.2em;
+        cursor: pointer;
+    }
+
+    /* Seção de Capitães */
+    #captains-section {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
         }
 
-        body {
-            background-color: white !important;
-            color: black !important;
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Ajustes para Telas Pequenas */
+    @@media (max-width: 576px) {
+        .btn-md-grow {
+            width: 100%;
         }
 
-        .card {
-            border: 1px solid #ccc !important;
-            break-inside: avoid;
-        }
-
-        .text-white, .text-info {
-            color: black !important;
-        }
-
-        .bg-dark {
-            background-color: white !important;
+        h2 {
+            font-size: 1.25rem;
         }
     }
 </style>
-
-@section Scripts{
-
-        function shareToWhatsApp() {
-        let text = "*⭐ STAR CHAMPIONSHIP - TIMES FORMADOS* \n\n";
-
-        // Pega a diferença do ViewBag/Model que já está na tela
-        const diff = "@difference.ToString("F1")";
-        text += `_Equilíbrio: ${diff} pts de diferença_\n\n`;
-
-        // Seleciona todos os cards de times
-        const teamCards = document.querySelectorAll('.card');
-
-        teamCards.forEach((card) => {
-            const teamName = card.querySelector('.card-header h5').innerText;
-            const totalOverall = card.querySelector('.card-header .badge').innerText;
-
-            text += `*${teamName}* (${totalOverall})\n`;
-
-            const players = card.querySelectorAll('.list-group-item h6');
-            players.forEach((p, index) => {
-                text += `${index + 1}. ${p.innerText}\n`;
-            });
-            text += "\n";
-        });
-
-        text += "_Gerado automaticamente por StarChampionship_";
-
-        // Codifica para URL e abre o WhatsApp
-        const encodedText = encodeURIComponent(text);
-        window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
-    }
-}

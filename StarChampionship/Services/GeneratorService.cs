@@ -9,48 +9,58 @@ namespace StarChampionship.Services
     {
         public List<Team> BuildBalancedTeams(List<Player> players, int numberOfTeams, Dictionary<int, int?> selectedCaptains)
         {
+            // 1. Validação inicial de segurança
             if (numberOfTeams <= 0) return new List<Team>();
+            if (players == null || !players.Any()) return new List<Team>();
 
-            // 1. Inicializa os times
+            // 2. Inicializa os times
             var teams = new List<Team>();
             for (int i = 1; i <= numberOfTeams; i++)
             {
                 teams.Add(new Team { Id = i, Name = $"Time {i}", Players = new List<Player>() });
             }
 
-            // 2. Aloca os capitães pré-definidos
+            // 3. Aloca os capitães pré-definidos (Se houver)
             var remainingPlayers = new List<Player>(players);
 
-            foreach (var selection in selectedCaptains)
+            // Verificação de nulidade para o dicionário vindo do Controller
+            if (selectedCaptains != null)
             {
-                int teamId = selection.Key;
-                int? playerId = selection.Value;
-
-                // Só processa se houver um jogador selecionado (não for "-- Sem Capitão --")
-                if (playerId.HasValue && playerId.Value > 0)
+                foreach (var selection in selectedCaptains)
                 {
-                    var captain = remainingPlayers.FirstOrDefault(p => p.Id == playerId.Value);
-                    if (captain != null)
+                    int teamId = selection.Key;
+                    int? playerId = selection.Value;
+
+                    // CORREÇÃO: Só processa se houver um ID válido e maior que zero
+                    // Isso ignora a opção "-- Sem Capitão --" vinda do HTML
+                    if (playerId.HasValue && playerId.Value > 0)
                     {
-                        var targetTeam = teams.FirstOrDefault(t => t.Id == teamId);
-                        targetTeam?.Players.Add(captain);
-                        remainingPlayers.Remove(captain);
+                        var captain = remainingPlayers.FirstOrDefault(p => p.Id == playerId.Value);
+                        if (captain != null)
+                        {
+                            var targetTeam = teams.FirstOrDefault(t => t.Id == teamId);
+                            if (targetTeam != null)
+                            {
+                                targetTeam.Players.Add(captain);
+                                remainingPlayers.Remove(captain);
+                            }
+                        }
                     }
                 }
             }
 
-            // 3. Ordena os jogadores restantes pelo Overall (do maior para o menor)
-            // Isso é essencial para o balanceamento heurístico
+            // 4. Ordena os jogadores restantes pelo Overall (do maior para o menor)
+            // Essencial para a lógica de distribuição gulosa (Greedy Algorithm)
             remainingPlayers = remainingPlayers.OrderByDescending(p => p.Overall).ToList();
 
-            // 4. Distribui os jogadores restantes
-            // Usamos a lógica de "Snake Draft" invertida para equilibrar: 
-            // sempre adicionamos o próximo melhor jogador ao time com o menor Overall atual
+            // 5. Distribui os jogadores restantes
+            // Lógica de equilíbrio: sempre adicionamos o próximo melhor jogador ao time 
+            // que possui a menor soma de Overall no momento.
             foreach (var player in remainingPlayers)
             {
                 var weakestTeam = teams
                     .OrderBy(t => t.Players.Sum(p => p.Overall))
-                    .ThenBy(t => t.Players.Count) // Desempate pela quantidade de membros
+                    .ThenBy(t => t.Players.Count) // Critério de desempate: menor número de jogadores
                     .First();
 
                 weakestTeam.Players.Add(player);
