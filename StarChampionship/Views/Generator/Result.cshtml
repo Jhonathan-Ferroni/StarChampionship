@@ -1,12 +1,14 @@
 ﻿@using StarChampionship.Models
 @{
     ViewData["Title"] = "Times Formados";
-    var teamA = ViewBag.TeamA as List<Player>;
-    var teamB = ViewBag.TeamB as List<Player>;
-    var sumA = teamA?.Sum(p => p.Overall) ?? 0;
-    var sumB = teamB?.Sum(p => p.Overall) ?? 0;
+    var teams = ViewBag.Teams as List<Team>;
     var difference = (double)ViewBag.Difference;
     var margin = (double)ViewBag.Margin;
+    var numberOfTeams = (int)ViewBag.NumberOfTeams;
+
+    // Cores para os cards (rotativas)
+    string[] borderColors = { "border-primary", "border-danger", "border-success", "border-warning", "border-info" };
+    string[] headerColors = { "bg-primary", "bg-danger", "bg-success", "bg-warning text-dark", "bg-info text-dark" };
 }
 
 <div class="container mt-4">
@@ -19,87 +21,77 @@
                     @(difference <= margin ? "✅ EQUILÍBRIO ALCANÇADO" : "⚠️ DIFERENÇA ALTA")
                 </span>
                 <span class="mx-2 text-muted">|</span>
-                <small>Diferença: <strong>@difference.ToString("F1")</strong> pts</small>
+                <small>Diferença Máxima: <strong>@difference.ToString("F1")</strong> pts</small>
             </div>
         </div>
     </div>
 
-    @* Área dos Times *@
-    <div class="row g-4">
-        @* TIME A *@
-        <div class="col-lg-6">
-            <div class="card bg-dark border-primary shadow">
-                <div class="card-header bg-primary bg-gradient text-white d-flex justify-content-between align-items-center py-2">
-                    <h5 class="mb-0 fw-bold">TIME A</h5>
-                    <span class="badge bg-white text-primary fw-bold">Total: @sumA.ToString("F1")</span>
-                </div>
-                <div class="card-body p-0">
-                    <ul class="list-group list-group-flush">
-                        @foreach (var p in teamA)
-                        {
-                            <li class="list-group-item bg-dark border-secondary d-flex align-items-center justify-content-between py-2">
-                                <div class="d-flex align-items-center">
-                                    <img src="@(string.IsNullOrEmpty(p.ImageUrl) ? "https://cdn-icons-png.flaticon.com/512/166/166344.png" : p.ImageUrl)"
-                                         class="rounded-circle border border-secondary me-3" style="width: 40px; height: 40px; object-fit: cover;">
-                                    <div>
-                                        <h6 class="text-white mb-0 small">@p.Name</h6>
-                                        <small class="text-info" style="font-size: 0.65rem;">Top Atributos</small>
-                                    </div>
-                                </div>
-                                <span class="badge bg-secondary opacity-75">@p.Overall.ToString("F1")</span>
-                            </li>
-                        }
-                    </ul>
-                </div>
-            </div>
-        </div>
+    @* Área Dinâmica dos Times *@
+    <div class="row g-4 justify-content-center">
+        @for (int i = 0; i < teams.Count; i++)
+        {
+            var t = teams[i];
+            var colorIndex = i % borderColors.Length;
 
-        @* TIME B *@
-        <div class="col-lg-6">
-            <div class="card bg-dark border-danger shadow">
-                <div class="card-header bg-danger bg-gradient text-white d-flex justify-content-between align-items-center py-2">
-                    <h5 class="mb-0 fw-bold">TIME B</h5>
-                    <span class="badge bg-white text-danger fw-bold">Total: @sumB.ToString("F1")</span>
-                </div>
-                <div class="card-body p-0">
-                    <ul class="list-group list-group-flush">
-                        @foreach (var p in teamB)
-                        {
-                            <li class="list-group-item bg-dark border-secondary d-flex align-items-center justify-content-between py-2">
-                                <div class="d-flex align-items-center">
-                                    <img src="@(string.IsNullOrEmpty(p.ImageUrl) ? "https://cdn-icons-png.flaticon.com/512/166/166344.png" : p.ImageUrl)"
-                                         class="rounded-circle border border-secondary me-3" style="width: 40px; height: 40px; object-fit: cover;">
-                                    <div>
-                                        <h6 class="text-white mb-0 small">@p.Name</h6>
-                                        <small class="text-info" style="font-size: 0.65rem;">Top Atributos</small>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card bg-dark @borderColors[colorIndex] shadow h-100">
+                    <div class="card-header @headerColors[colorIndex] bg-gradient d-flex justify-content-between align-items-center py-2">
+                        <h5 class="mb-0 fw-bold">@t.Name</h5>
+                        <span class="badge bg-white text-dark fw-bold">Σ @t.TotalOverall.ToString("F1")</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush">
+                            @foreach (var p in t.Players)
+                            {
+                                <li class="list-group-item bg-dark border-secondary d-flex align-items-center justify-content-between py-2">
+                                    <div class="d-flex align-items-center">
+                                        <img src="@(string.IsNullOrEmpty(p.ImageUrl) ? "https://cdn-icons-png.flaticon.com/512/166/166344.png" : p.ImageUrl)"
+                                             class="rounded-circle border border-secondary me-3" style="width: 38px; height: 38px; object-fit: cover;">
+                                        <div>
+                                            <h6 class="text-white mb-0 small">@p.Name</h6>
+                                            <small class="text-info" style="font-size: 0.6rem;">Overall: @p.Overall.ToString("F1")</small>
+                                        </div>
                                     </div>
-                                </div>
-                                <span class="badge bg-secondary opacity-75">@p.Overall.ToString("F1")</span>
-                            </li>
-                        }
-                    </ul>
+                                    @* Ícone de estrela se for o capitão (opcional, se você quiser marcar) *@
+                                    <i class="bi bi-person-fill text-muted opacity-50"></i>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                    <div class="card-footer bg-dark border-top border-secondary text-center py-1">
+                        <small class="text-muted" style="font-size: 0.7rem;">Média: @t.AverageOverall.ToString("F1")</small>
+                    </div>
                 </div>
             </div>
-        </div>
+        }
     </div>
 
     @* Controles Inferiores *@
     <div class="mt-5 text-center">
         <div class="row justify-content-center g-3">
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-8 col-lg-6">
                 <div class="card bg-dark border-secondary p-3 shadow-sm">
                     <form asp-action="Generate" method="post">
+                        @* Preserva os IDs selecionados e o número de times *@
                         @foreach (var id in (int[])ViewBag.SelectedIds)
                         {
                             <input type="hidden" name="selectedIds" value="@id" />
                         }
+                        <input type="hidden" name="numberOfTeams" value="@numberOfTeams" />
 
-                        <label class="form-label text-white small mb-2">Refinar Margem de Erro:</label>
-                        <div class="input-group">
-                            <input type="number" name="margin" step="0.5" value="@margin" class="form-control bg-dark border-secondary text-white text-center fw-bold" />
-                            <button type="submit" class="btn btn-outline-success">
-                                <i class="bi bi-arrow-repeat"></i> Re-sortear
-                            </button>
+                        <div class="row align-items-end g-2">
+                            <div class="col-8">
+                                <label class="form-label text-white small mb-1">Ajustar Rigor e Tentar Novamente:</label>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-secondary border-secondary text-white"><i class="bi bi-sliders"></i></span>
+                                    <input type="number" name="margin" step="0.5" value="@margin" class="form-control bg-dark border-secondary text-white text-center fw-bold" />
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <button type="submit" class="btn btn-sm btn-success w-100 py-2 shadow-sm">
+                                    <i class="bi bi-arrow-repeat"></i> Re-sortear
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -110,36 +102,82 @@
             <a asp-action="Index" class="btn btn-outline-light px-4">
                 <i class="bi bi-arrow-left"></i> Nova Seleção
             </a>
+
+            @* Botão WhatsApp *@
+            <button class="btn btn-success px-4 ms-md-2 mt-2 mt-md-0 shadow" onclick="shareToWhatsApp()">
+                <i class="bi bi-whatsapp"></i> Enviar p/ WhatsApp
+            </button>
+
             <button class="btn btn-info px-4 ms-md-2 mt-2 mt-md-0 shadow text-dark fw-bold" onclick="window.print()">
-                <i class="bi bi-share"></i> Print dos Times
-                </a>
+                <i class="bi bi-printer"></i> Imprimir
+            </button>
         </div>
     </div>
 </div>
 
 <style>
-    /* Ajustes finos para Mobile */
-    @@media (max-width: 768px) {
-        .card-header h5 {
-            font-size: 1rem;
-        }
-
-        .list-group-item h6 {
-            font-size: 0.85rem;
-        }
-
-        .alert {
-            width: 100%;
-            font-size: 0.85rem;
-        }
-    }
-
-    /* Cores de fundo fixas para dark mode */
     .bg-dark {
         background-color: #1a1d20 !important;
     }
 
     .list-group-item {
-        border-color: rgba(255,255,255,0.1) !important;
+        border-color: rgba(255,255,255,0.05) !important;
+    }
+
+    @@media print {
+        .btn, .alert, form, .mt-5 {
+            display: none !important;
+        }
+
+        body {
+            background-color: white !important;
+            color: black !important;
+        }
+
+        .card {
+            border: 1px solid #ccc !important;
+            break-inside: avoid;
+        }
+
+        .text-white, .text-info {
+            color: black !important;
+        }
+
+        .bg-dark {
+            background-color: white !important;
+        }
     }
 </style>
+
+@section Scripts{
+
+        function shareToWhatsApp() {
+        let text = "*⭐ STAR CHAMPIONSHIP - TIMES FORMADOS* \n\n";
+
+        // Pega a diferença do ViewBag/Model que já está na tela
+        const diff = "@difference.ToString("F1")";
+        text += `_Equilíbrio: ${diff} pts de diferença_\n\n`;
+
+        // Seleciona todos os cards de times
+        const teamCards = document.querySelectorAll('.card');
+
+        teamCards.forEach((card) => {
+            const teamName = card.querySelector('.card-header h5').innerText;
+            const totalOverall = card.querySelector('.card-header .badge').innerText;
+
+            text += `*${teamName}* (${totalOverall})\n`;
+
+            const players = card.querySelectorAll('.list-group-item h6');
+            players.forEach((p, index) => {
+                text += `${index + 1}. ${p.innerText}\n`;
+            });
+            text += "\n";
+        });
+
+        text += "_Gerado automaticamente por StarChampionship_";
+
+        // Codifica para URL e abre o WhatsApp
+        const encodedText = encodeURIComponent(text);
+        window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
+    }
+}

@@ -11,71 +11,73 @@ namespace StarChampionship.Controllers
     public class GeneratorController : Controller
     {
         private readonly PlayerService _playerService;
+        private readonly GeneratorService _generatorService;
 
-        public GeneratorController(PlayerService playerService)
+        // Injetamos o novo GeneratorService no construtor
+        public GeneratorController(PlayerService playerService, GeneratorService generatorService)
         {
             _playerService = playerService;
+            _generatorService = generatorService;
         }
 
-        // GET: Generator
         public async Task<IActionResult> Index()
         {
             var players = await _playerService.FindAllAsync();
             return View(players);
         }
 
-        // POST: Generator/Generate
         [HttpPost]
-        public async Task<IActionResult> Generate(int[] selectedIds, double margin)
+        public async Task<IActionResult> Generate(int[] selectedIds, int numberOfTeams, bool hasFixedCaptains, Dictionary<int, int?> selectedCaptains, double margin = 2.0)
         {
-            if (margin <= 0) margin = 2.0;
-
-            if (selectedIds == null || selectedIds.Length < 2)
+            if (selectedIds == null || selectedIds.Length < numberOfTeams)
             {
+                // Adicione uma mensagem de erro aqui se desejar (TempData)
                 return RedirectToAction(nameof(Index));
             }
 
             var allPlayers = await _playerService.FindAllAsync();
-            var players = allPlayers.Where(p => selectedIds.Contains(p.Id)).ToList();
+            var selectedPlayers = allPlayers.Where(p => selectedIds.Contains(p.Id)).ToList();
 
-            int n = players.Count;
-            int sizeTeamA = n / 2;
-
-            List<Player> bestTeamA = new List<Player>();
-            List<Player> bestTeamB = new List<Player>();
-            double minDiff = double.MaxValue;
+            List<Team> bestGeneration = null;
+            double minVariance = double.MaxValue;
 
             Random rand = new Random();
+
+            // Mantemos sua lógica de 1000 tentativas para buscar o melhor equilíbrio
             for (int i = 0; i < 1000; i++)
             {
-                var shuffled = players.OrderBy(x => rand.Next()).ToList();
-                var tempA = shuffled.Take(sizeTeamA).ToList();
-                var tempB = shuffled.Skip(sizeTeamA).ToList();
+                // Embaralhamos a lista para que a distribuição gulosa varie a cada iteração
+                var shuffledPlayers = selectedPlayers.OrderBy(x => rand.Next()).ToList();
 
-                double diff = Math.Abs(tempA.Sum(p => p.Overall) - tempB.Sum(p => p.Overall));
+                // Chamamos o serviço que já lida com os capitães fixos
+                var currentTeams = _generatorService.BuildBalancedTeams(shuffledPlayers, numberOfTeams, selectedCaptains);
 
-                // Usa a margem que veio do HTML
+                // Calculamos a diferença entre o time mais forte e o mais fraco (Variância)
+                double maxOverall = currentTeams.Max(t => t.TotalOverall);
+                double minOverall = currentTeams.Min(t => t.TotalOverall);
+                double diff = maxOverall - minOverall;
+
+                // Se atingir a margem desejada, interrompemos e retornamos esse resultado
                 if (diff <= margin)
                 {
-                    bestTeamA = tempA;
-                    bestTeamB = tempB;
-                    minDiff = diff;
+                    bestGeneration = currentTeams;
+                    minVariance = diff;
                     break;
                 }
 
-                if (diff < minDiff)
+                if (diff < minVariance)
                 {
-                    minDiff = diff;
-                    bestTeamA = tempA;
-                    bestTeamB = tempB;
+                    minVariance = diff;
+                    bestGeneration = currentTeams;
                 }
             }
 
-            ViewBag.TeamA = bestTeamA;
-            ViewBag.TeamB = bestTeamB;
-            ViewBag.Difference = minDiff;
+            // Passamos os dados para a View de Resultado
+            ViewBag.Teams = bestGeneration;
+            ViewBag.Difference = minVariance;
             ViewBag.SelectedIds = selectedIds;
-            ViewBag.Margin = margin; // Devolvemos para a View usar no botão "Sortear Novamente"
+            ViewBag.NumberOfTeams = numberOfTeams;
+            ViewBag.Margin = margin;
 
             return View("Result");
         }

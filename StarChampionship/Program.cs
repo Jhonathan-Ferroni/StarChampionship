@@ -38,7 +38,9 @@ builder.Services.AddDbContext<StarChampionshipContext>(options =>
 // SERVICES
 // ===========================
 builder.Services.AddScoped<PlayerService>();
+builder.Services.AddScoped<GeneratorService>();
 builder.Services.AddScoped<SeedingService>();
+
 
 builder.Services.AddControllersWithViews();
 
