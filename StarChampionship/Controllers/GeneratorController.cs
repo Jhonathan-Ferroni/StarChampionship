@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using StarChampionship.Services;
 using StarChampionship.Models;
-using System;
-using System.Collections.Generic;
+using StarChampionship.Services;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -26,8 +24,6 @@ namespace StarChampionship.Controllers
         }
 
         [HttpPost]
-        [HttpPost]
-        [HttpPost]
         public async Task<IActionResult> Generate(int[] selectedIds, int numberOfTeams, bool hasFixedCaptains, Dictionary<string, string>? selectedCaptains, double margin = 2.0)
         {
             var selectedPlayersIds = selectedIds?.Distinct().ToHashSet() ?? new HashSet<int>();
@@ -44,7 +40,6 @@ namespace StarChampionship.Controllers
                     // Tenta converter a chave (número do time) e o valor (id do jogador)
                     if (int.TryParse(entry.Key, out int teamIndex) && int.TryParse(entry.Value, out int playerId))
                     {
-                        // Se o playerId for 0, o Service já está pronto para ignorar
                         // Ignora opção "Sem Capitão"
                         if (playerId == 0)
                         {
@@ -89,7 +84,7 @@ namespace StarChampionship.Controllers
                 var shuffledPlayers = selectedPlayers.OrderBy(x => rand.Next()).ToList();
 
                 // Chamamos o serviço com o dicionário sanitizado
-                var currentTeams = _generatorService.BuildBalancedTeams(shuffledPlayers, numberOfTeams, captainsToProcess, margin);
+                var currentTeams = _generatorService.BuildBalancedTeams(shuffledPlayers, numberOfTeams, captainsToProcess);
 
                 if (currentTeams == null || !currentTeams.Any()) continue;
 
@@ -118,7 +113,7 @@ namespace StarChampionship.Controllers
             ViewBag.NumberOfTeams = numberOfTeams;
             ViewBag.Margin = margin;
 
-            return View("Result");
+            return View("Result", allPlayers);
         }
     }
 }

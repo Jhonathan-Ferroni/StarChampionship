@@ -7,7 +7,7 @@ namespace StarChampionship.Services
 {
     public class GeneratorService
     {
-        public List<Team> BuildBalancedTeams(List<Player> players, int numberOfTeams, Dictionary<int, int?> selectedCaptains, double margin)
+        public List<Team> BuildBalancedTeams(List<Player> players, int numberOfTeams, Dictionary<int, int?> selectedCaptains)
         {
             // 1. Validação inicial de segurança
             if (numberOfTeams <= 0 || players == null) return new List<Team>();
