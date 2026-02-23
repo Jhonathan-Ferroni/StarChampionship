@@ -26,11 +26,16 @@ namespace StarChampionship.Controllers
         }
 
         [HttpPost]
+        [HttpPost]
+        [HttpPost]
         public async Task<IActionResult> Generate(int[] selectedIds, int numberOfTeams, bool hasFixedCaptains, Dictionary<string, string>? selectedCaptains, double margin = 2.0)
         {
+            var selectedPlayersIds = selectedIds?.Distinct().ToHashSet() ?? new HashSet<int>();
+
             // 1. Tratamento manual do dicionário para evitar erro de Binding do ASP.NET
             // Recebemos como string e convertemos internamente para int?
             var captainsToProcess = new Dictionary<int, int?>();
+            var usedCaptains = new HashSet<int>();
 
             if (hasFixedCaptains && selectedCaptains != null)
             {
@@ -40,6 +45,19 @@ namespace StarChampionship.Controllers
                     if (int.TryParse(entry.Key, out int teamIndex) && int.TryParse(entry.Value, out int playerId))
                     {
                         // Se o playerId for 0, o Service já está pronto para ignorar
+                        // Ignora opção "Sem Capitão"
+                        if (playerId == 0)
+                        {
+                            continue;
+                        }
+
+                        // Garante que o capitão esteja entre os atletas selecionados e não seja repetido
+                        if (!selectedPlayersIds.Contains(playerId) || !usedCaptains.Add(playerId))
+                        {
+                            TempData["Error"] = "Os capitães devem ser atletas selecionados e não podem se repetir entre os times.";
+                            return RedirectToAction(nameof(Index));
+                        }
+
                         captainsToProcess[teamIndex] = playerId;
                     }
                 }
@@ -55,6 +73,12 @@ namespace StarChampionship.Controllers
             var allPlayers = await _playerService.FindAllAsync();
             var selectedPlayers = allPlayers.Where(p => selectedIds.Contains(p.Id)).ToList();
 
+            if (selectedPlayers.Count < numberOfTeams)
+            {
+                TempData["Error"] = "Selecione atletas suficientes para a quantidade de times.";
+                return RedirectToAction(nameof(Index));
+            }
+
             List<Team> bestGeneration = null;
             double minVariance = double.MaxValue;
             Random rand = new Random();
@@ -65,7 +89,7 @@ namespace StarChampionship.Controllers
                 var shuffledPlayers = selectedPlayers.OrderBy(x => rand.Next()).ToList();
 
                 // Chamamos o serviço com o dicionário sanitizado
-                var currentTeams = _generatorService.BuildBalancedTeams(shuffledPlayers, numberOfTeams, captainsToProcess);
+                var currentTeams = _generatorService.BuildBalancedTeams(shuffledPlayers, numberOfTeams, captainsToProcess, margin);
 
                 if (currentTeams == null || !currentTeams.Any()) continue;
 

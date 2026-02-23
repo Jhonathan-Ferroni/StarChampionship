@@ -7,11 +7,10 @@ namespace StarChampionship.Services
 {
     public class GeneratorService
     {
-        public List<Team> BuildBalancedTeams(List<Player> players, int numberOfTeams, Dictionary<int, int?> selectedCaptains)
+        public List<Team> BuildBalancedTeams(List<Player> players, int numberOfTeams, Dictionary<int, int?> selectedCaptains, double margin)
         {
             // 1. Validação inicial de segurança
-            if (numberOfTeams <= 0) return new List<Team>();
-            if (players == null || !players.Any()) return new List<Team>();
+            if (numberOfTeams <= 0 || players == null) return new List<Team>();
 
             // 2. Inicializa os times
             var teams = new List<Team>();
