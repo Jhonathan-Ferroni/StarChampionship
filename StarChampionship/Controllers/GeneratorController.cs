@@ -120,9 +120,7 @@ namespace StarChampionship.Controllers
             ViewBag.NumberOfTeams = numberOfTeams;
             ViewBag.Margin = margin;
 
-            return View("Result");
             return View("Result", allPlayers);
         }
     }
 }
-

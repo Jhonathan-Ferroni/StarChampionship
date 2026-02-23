@@ -1,11 +1,10 @@
-﻿@model IEnumerable<StarChampionship.Models.Player>
+﻿@model System.Collections.Generic.IEnumerable<StarChampionship.Models.Player>
 
 @{
     ViewData["Title"] = "Gerador de Times";
-    var teams = ViewBag.Teams as List<StarChampionship.Models.Team> ?? new List<StarChampionship.Models.Team>();
-    var selectedIdsRaw = ViewBag.SelectedIds as int[] ?? Array.Empty<int>();
-    var selectedIds = new HashSet<int>(selectedIdsRaw);
-    var selectedCount = selectedIds.Count;
+    var teams = ViewBag.Teams as System.Collections.Generic.List<StarChampionship.Models.Team> ?? new System.Collections.Generic.List<StarChampionship.Models.Team>();
+    var selectedIdsRaw = ViewBag.SelectedIds as int[];
+    var selectedCount = selectedIdsRaw?.Length ?? 0;
     var numberOfTeams = ViewBag.NumberOfTeams is int n ? n : 2;
     var margin = ViewBag.Margin is double m ? m : 2.0;
     var diff = ViewBag.Difference is double d ? d : 0.0;
@@ -49,7 +48,7 @@
                                     <span class="badge bg-info text-dark">@team.TotalOverall.ToString("F1")</span>
                                 </div>
                                 <ul class="list-group list-group-flush">
-                                    @foreach (var player in team.Players.OrderByDescending(p => p.Overall))
+                                    @foreach (var player in team.Players)
                                     {
                                         <li class="list-group-item bg-transparent text-white d-flex justify-content-between">
                                             <span>@player.Name</span>
@@ -64,7 +63,6 @@
             </div>
         </div>
     }
-
 
     <form asp-action="Generate" method="post" id="generator-form">
 
@@ -146,7 +144,7 @@
                             {
                                 <tr>
                                     <td class="text-center">
-                                        <input type="checkbox" name="selectedIds" value="@item.Id" data-name="@item.Name" class="form-check-input player-checkbox" checked="@(selectedIds.Contains(item.Id) ? "checked" : null)" />
+                                        <input type="checkbox" name="selectedIds" value="@item.Id" data-name="@item.Name" class="form-check-input player-checkbox" checked="@((selectedIdsRaw != null && System.Array.IndexOf(selectedIdsRaw, item.Id) >= 0) ? "checked" : null)" />
                                     </td>
                                     <td>
                                         <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "https://cdn-icons-png.flaticon.com/512/166/166344.png" : item.ImageUrl)"
@@ -169,7 +167,7 @@
                         <div class="player-card-mobile bg-secondary bg-opacity-10 border border-secondary rounded p-2 mb-2 shadow-sm" style="cursor: pointer;">
                             <div class="row align-items-center g-0">
                                 <div class="col-2 text-center">
-                                    <input type="checkbox" name="selectedIds" value="@item.Id" data-name="@item.Name" class="form-check-input player-checkbox" checked="@(selectedIds.Contains(item.Id) ? "checked" : null)">
+                                    <input type="checkbox" name="selectedIds" value="@item.Id" data-name="@item.Name" class="form-check-input player-checkbox" checked="@((selectedIdsRaw != null && System.Array.IndexOf(selectedIdsRaw, item.Id) >= 0) ? "checked" : null)">
                                 </div>
                                 <div class="col-2 text-center">
                                     <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "https://cdn-icons-png.flaticon.com/512/166/166344.png" : item.ImageUrl)"
