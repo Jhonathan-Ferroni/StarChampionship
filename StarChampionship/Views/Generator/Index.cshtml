@@ -19,9 +19,8 @@
 
     <form asp-action="Generate" method="post" id="generator-form">
 
-        @* --- NOVO: Painel de Configurações --- *@
+        @* --- Painel de Configurações --- *@
         <div class="row g-3 mb-4">
-            @* Rigor do Equilíbrio *@
             <div class="col-md-6">
                 <div class="card bg-dark shadow-sm border-secondary h-100">
                     <div class="card-body py-3">
@@ -38,7 +37,6 @@
                 </div>
             </div>
 
-            @* Quantidade de Times e Capitães *@
             <div class="col-md-6">
                 <div class="card bg-dark shadow-sm border-secondary h-100">
                     <div class="card-body py-3">
@@ -59,14 +57,13 @@
             </div>
         </div>
 
-        @* --- NOVO: Seção Dinâmica de Capitães --- *@
+        @* --- Seção Dinâmica de Capitães --- *@
         <div id="captains-section" class="card bg-dark border-info mb-4 d-none">
             <div class="card-header py-2 bg-info bg-opacity-10 text-info small fw-bold">
                 <i class="bi bi-star-fill"></i> Designar Capitães
             </div>
             <div class="card-body py-3">
-                <div id="captains-container" class="row g-2">
-                </div>
+                <div id="captains-container" class="row g-2"></div>
             </div>
         </div>
 
@@ -112,8 +109,16 @@
                     </table>
                 </div>
 
-                @* VISÃO MOBILE (Omitida para brevidade, mas deve seguir a lógica de sincronia abaixo) *@
+                @* VISÃO MOBILE *@
                 <div class="d-md-none p-2">
+                    @* BOTAO ADICIONADO: Selecionar Todos Mobile *@
+                    <div class="d-flex justify-content-between align-items-center mb-3 px-2 border-bottom border-secondary pb-2">
+                        <label for="selectAllMobile" class="text-muted fw-bold mb-0" style="font-size: 0.75rem;">
+                            <i class="bi bi-check2-all text-info"></i> SELECIONAR TODOS
+                        </label>
+                        <input type="checkbox" id="selectAllMobile" class="form-check-input select-all-btn border-light" />
+                    </div>
+
                     @foreach (var item in Model)
                     {
                         <div class="player-card-mobile bg-secondary bg-opacity-10 border border-secondary rounded p-2 mb-2 shadow-sm" style="cursor: pointer;">
@@ -121,7 +126,11 @@
                                 <div class="col-2 text-center">
                                     <input type="checkbox" name="selectedIds" value="@item.Id" data-name="@item.Name" class="form-check-input player-checkbox">
                                 </div>
-                                <div class="col-8 ps-2">
+                                <div class="col-2 text-center">
+                                    <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "https://cdn-icons-png.flaticon.com/512/166/166344.png" : item.ImageUrl)"
+                                         class="rounded-circle" style="width: 35px; height: 35px; object-fit: cover;" />
+                                </div>
+                                <div class="col-6 ps-2">
                                     <div class="text-white fw-bold small">@item.Name</div>
                                 </div>
                                 <div class="col-2 text-end">
@@ -131,6 +140,9 @@
                         </div>
                     }
                 </div>
+            </div>
+            <div class="card-footer bg-dark border-top border-secondary py-2">
+                <small class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-info-circle text-info"></i> Selecione os atletas e configure as regras antes de gerar.</small>
             </div>
         </div>
     </form>
@@ -147,13 +159,11 @@
         const checkboxes = document.querySelectorAll('.player-checkbox');
         const countBadge = document.getElementById('selected-count');
 
-        // Atualiza valor visual da margem
         marginRange.addEventListener('input', function() {
             marginValue.innerText = parseFloat(this.value).toFixed(1);
             marginValue.className = `badge ms-2 ${this.value <= 2 ? 'bg-success' : this.value <= 5 ? 'bg-warning text-dark' : 'bg-danger'}`;
         });
 
-        // Lógica de capitães dinâmicos
         function updateCaptainsUI() {
             const numTeams = parseInt(numTeamsInput.value);
             const showCaptains = captainsSwitch.checked;
@@ -162,14 +172,13 @@
                 captainsSection.classList.remove('d-none');
                 captainsContainer.innerHTML = '';
 
-                // Usamos um Map para garantir IDs únicos e nomes limpos
                 const selectedPlayersMap = new Map();
                 document.querySelectorAll('.player-checkbox:checked').forEach(cb => {
                     selectedPlayersMap.set(cb.value, cb.getAttribute('data-name'));
                 });
 
                 for (let i = 1; i <= numTeams; i++) {
-                    let options = '<option value="">-- Sem Capitão --</option>';
+                    let options = '<option value="0">-- Sem Capitão --</option>';
                     selectedPlayersMap.forEach((name, id) => {
                         options += `<option value="${id}">${name}</option>`;
                     });
@@ -185,34 +194,32 @@
                 }
             } else {
                 captainsSection.classList.add('d-none');
-                captainsContainer.innerHTML = ''; // Limpa para evitar envios fantasmas
+                captainsContainer.innerHTML = '';
             }
         }
 
-        // Eventos
         numTeamsInput.addEventListener('change', updateCaptainsUI);
         captainsSwitch.addEventListener('change', updateCaptainsUI);
 
         checkboxes.forEach(cb => {
             cb.addEventListener('change', () => {
-                // Sincroniza checkbox mobile/desktop
                 document.querySelectorAll(`.player-checkbox[value="${cb.value}"]`).forEach(c => c.checked = cb.checked);
+                const uniqueSelected = new Set([...document.querySelectorAll('.player-checkbox:checked')].map(c => c.value)).size;
+                countBadge.innerText = `${uniqueSelected} selecionados`;
+                countBadge.className = uniqueSelected > 0 ? 'badge bg-warning text-dark fw-bold' : 'badge bg-info text-dark fw-bold';
+                updateCaptainsUI();
+            });
+        });
 
+        document.querySelectorAll('.select-all-btn').forEach(btn => {
+            btn.addEventListener('change', function() {
+                checkboxes.forEach(cb => cb.checked = this.checked);
                 const uniqueSelected = new Set([...document.querySelectorAll('.player-checkbox:checked')].map(c => c.value)).size;
                 countBadge.innerText = `${uniqueSelected} selecionados`;
                 updateCaptainsUI();
             });
         });
 
-        // Select All
-        document.querySelectorAll('.select-all-btn').forEach(btn => {
-            btn.addEventListener('change', function() {
-                checkboxes.forEach(cb => cb.checked = this.checked);
-                updateCaptainsUI();
-            });
-        });
-
-        // Clique no card mobile
         document.querySelectorAll('.player-card-mobile').forEach(card => {
             card.addEventListener('click', (e) => {
                 if (e.target.type !== 'checkbox') {
@@ -224,3 +231,60 @@
         });
     </script>
 }
+
+<style>
+    .player-card-mobile {
+        transition: all 0.2s ease;
+        user-select: none;
+    }
+
+        .player-card-mobile:active {
+            transform: scale(0.98);
+            background-color: rgba(255, 255, 255, 0.05) !important;
+        }
+
+    .form-range::-webkit-slider-thumb {
+        background: #0dcaf0;
+    }
+
+    .table-dark {
+        --bs-table-bg: #1a1d20;
+        --bs-table-border-color: #373b3e;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    .form-check-input {
+        width: 1.2em;
+        height: 1.2em;
+        cursor: pointer;
+    }
+
+    #captains-section {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .btn-md-grow {
+            width: 100%;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+        }
+    }
+</style>

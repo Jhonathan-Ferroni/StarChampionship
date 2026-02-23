@@ -26,21 +26,31 @@ namespace StarChampionship.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Generate(int[] selectedIds, int numberOfTeams, bool hasFixedCaptains, Dictionary<int, int?> selectedCaptains, double margin = 2.0)
+        public async Task<IActionResult> Generate(int[] selectedIds, int numberOfTeams, bool hasFixedCaptains, Dictionary<string, string>? selectedCaptains, double margin = 2.0)
         {
-            // 1. Tratamento de Erro: Se não houver jogadores selecionados o suficiente
+            // 1. Tratamento manual do dicionário para evitar erro de Binding do ASP.NET
+            // Recebemos como string e convertemos internamente para int?
+            var captainsToProcess = new Dictionary<int, int?>();
+
+            if (hasFixedCaptains && selectedCaptains != null)
+            {
+                foreach (var entry in selectedCaptains)
+                {
+                    // Tenta converter a chave (número do time) e o valor (id do jogador)
+                    if (int.TryParse(entry.Key, out int teamIndex) && int.TryParse(entry.Value, out int playerId))
+                    {
+                        // Se o playerId for 0, o Service já está pronto para ignorar
+                        captainsToProcess[teamIndex] = playerId;
+                    }
+                }
+            }
+
+            // 2. Validação de segurança de dados
             if (selectedIds == null || selectedIds.Length < numberOfTeams || numberOfTeams < 2)
             {
                 TempData["Error"] = "Selecione atletas suficientes para a quantidade de times.";
                 return RedirectToAction(nameof(Index));
             }
-
-            // 2. Correção do BUG: Normaliza o dicionário de capitães
-            // Se a função estiver desligada OU o dicionário vier nulo, inicializamos um vazio
-            // Isso evita o erro de referência nula no loop e no serviço
-            var captainsToProcess = (hasFixedCaptains && selectedCaptains != null)
-                                    ? selectedCaptains
-                                    : new Dictionary<int, int?>();
 
             var allPlayers = await _playerService.FindAllAsync();
             var selectedPlayers = allPlayers.Where(p => selectedIds.Contains(p.Id)).ToList();
@@ -54,7 +64,7 @@ namespace StarChampionship.Controllers
             {
                 var shuffledPlayers = selectedPlayers.OrderBy(x => rand.Next()).ToList();
 
-                // Passamos o captainsToProcess (que nunca será nulo agora)
+                // Chamamos o serviço com o dicionário sanitizado
                 var currentTeams = _generatorService.BuildBalancedTeams(shuffledPlayers, numberOfTeams, captainsToProcess);
 
                 if (currentTeams == null || !currentTeams.Any()) continue;
@@ -77,7 +87,7 @@ namespace StarChampionship.Controllers
                 }
             }
 
-            // 4. Preparação dos dados para a View de Resultado
+            // 4. Dados para a View
             ViewBag.Teams = bestGeneration;
             ViewBag.Difference = minVariance;
             ViewBag.SelectedIds = selectedIds;
