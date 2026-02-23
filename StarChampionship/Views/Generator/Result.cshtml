@@ -2,6 +2,12 @@
 
 @{
     ViewData["Title"] = "Gerador de Times";
+    var teams = ViewBag.Teams as List<StarChampionship.Models.Team> ?? new List<StarChampionship.Models.Team>();
+    var selectedIds = (ViewBag.SelectedIds as int[])?.ToHashSet() ?? new HashSet<int>();
+    var selectedCount = selectedIds.Count;
+    var numberOfTeams = ViewBag.NumberOfTeams is int n ? n : 2;
+    var margin = ViewBag.Margin is double m ? m : 2.0;
+    var diff = ViewBag.Difference is double d ? d : 0.0;
 }
 
 <div class="container mt-4">
@@ -17,6 +23,47 @@
         </div>
     </div>
 
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]
+        </div>
+    }
+
+    @if (teams.Any())
+    {
+        <div class="card bg-dark border-success mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="text-success fw-bold"><i class="bi bi-trophy-fill"></i> Resultado da Geração</span>
+                <span class="badge bg-success">Diferença: @diff.ToString("F1")</span>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    @foreach (var team in teams)
+                    {
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 bg-secondary bg-opacity-10 border-secondary">
+                                <div class="card-header d-flex justify-content-between">
+                                    <span class="fw-bold text-white">@team.Name</span>
+                                    <span class="badge bg-info text-dark">@team.TotalOverall.ToString("F1")</span>
+                                </div>
+                                <ul class="list-group list-group-flush">
+                                    @foreach (var player in team.Players.OrderByDescending(p => p.Overall))
+                                    {
+                                        <li class="list-group-item bg-transparent text-white d-flex justify-content-between">
+                                            <span>@player.Name</span>
+                                            <span class="badge bg-dark">@player.Overall.ToString("F1")</span>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
     <form asp-action="Generate" method="post" id="generator-form">
 
         @* --- Painel de Configurações --- *@
@@ -27,9 +74,9 @@
                     <div class="card-body py-3">
                         <label for="marginRange" class="form-label fw-bold text-white mb-1 small">
                             <i class="bi bi-sliders text-info"></i> Rigor do Equilíbrio:
-                            <span id="marginValue" class="badge bg-success ms-2">2.0</span>
+                            <span id="marginValue" class="badge bg-success ms-2">@margin.ToString("F1")</span>
                         </label>
-                        <input type="range" name="margin" class="form-range" min="0" max="50" step="0.5" value="2.0" id="marginRange">
+                        <input type="range" name="margin" class="form-range" min="0" max="50" step="0.5" value="@margin.ToString(System.Globalization.CultureInfo.InvariantCulture)" id="marginRange">
                         <div class="d-flex justify-content-between">
                             <small class="text-muted" style="font-size: 0.65rem;">0.0 (Pro)</small>
                             <small class="text-muted" style="font-size: 0.65rem;">50.0 (Várzea)</small>
@@ -45,7 +92,7 @@
                         <div class="row g-2">
                             <div class="col-6">
                                 <label class="form-label fw-bold text-white small"><i class="bi bi-people text-info"></i> Times:</label>
-                                <input type="number" name="numberOfTeams" id="numberOfTeams" class="form-control form-control-sm bg-dark text-white border-secondary" min="2" max="10" value="2">
+                                <input type="number" name="numberOfTeams" id="numberOfTeams" class="form-control form-control-sm bg-dark text-white border-secondary" min="2" max="10" value="@numberOfTeams">
                             </div>
                             <div class="col-6 d-flex align-items-end">
                                 <div class="form-check form-switch mb-1">
@@ -75,7 +122,7 @@
         <div class="card shadow-sm border-secondary">
             <div class="card-header bg-primary py-2 d-flex justify-content-between align-items-center">
                 <h6 class="mb-0 text-white">Atletas Disponíveis</h6>
-                <span id="selected-count" class="badge bg-info text-dark fw-bold">0 selecionados</span>
+                <span id="selected-count" class="badge bg-info text-dark fw-bold">@selectedCount selecionados</span>
             </div>
 
             <div class="card-body p-0 bg-dark">
@@ -97,7 +144,7 @@
                             {
                                 <tr>
                                     <td class="text-center">
-                                        <input type="checkbox" name="selectedIds" value="@item.Id" data-name="@item.Name" class="form-check-input player-checkbox" />
+                                        <input type="checkbox" name="selectedIds" value="@item.Id" data-name="@item.Name" class="form-check-input player-checkbox" @(selectedIds.Contains(item.Id) ? "checked" : "") />
                                     </td>
                                     <td>
                                         <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "https://cdn-icons-png.flaticon.com/512/166/166344.png" : item.ImageUrl)"
@@ -120,7 +167,7 @@
                         <div class="player-card-mobile bg-secondary bg-opacity-10 border border-secondary rounded p-2 mb-2 shadow-sm" style="cursor: pointer;">
                             <div class="row align-items-center g-0">
                                 <div class="col-2 text-center">
-                                    <input type="checkbox" name="selectedIds" value="@item.Id" data-name="@item.Name" class="form-check-input player-checkbox">
+                                    <input type="checkbox" name="selectedIds" value="@item.Id" data-name="@item.Name" class="form-check-input player-checkbox" @(selectedIds.Contains(item.Id) ? "checked" : "")>
                                 </div>
                                 <div class="col-2 text-center">
                                     <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "https://cdn-icons-png.flaticon.com/512/166/166344.png" : item.ImageUrl)"

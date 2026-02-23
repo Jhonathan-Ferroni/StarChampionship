@@ -40,6 +40,7 @@ namespace StarChampionship.Controllers
                     // Tenta converter a chave (número do time) e o valor (id do jogador)
                     if (int.TryParse(entry.Key, out int teamIndex) && int.TryParse(entry.Value, out int playerId))
                     {
+                        // Se o playerId for 0, o Service já está pronto para ignorar
                         // Ignora opção "Sem Capitão"
                         if (playerId == 0)
                         {
@@ -106,6 +107,12 @@ namespace StarChampionship.Controllers
                 }
             }
 
+            if (bestGeneration == null || !bestGeneration.Any())
+            {
+                TempData["Error"] = "Não foi possível gerar equipes com os parâmetros informados.";
+                return RedirectToAction(nameof(Index));
+            }
+
             // 4. Dados para a View
             ViewBag.Teams = bestGeneration;
             ViewBag.Difference = minVariance;
@@ -113,7 +120,9 @@ namespace StarChampionship.Controllers
             ViewBag.NumberOfTeams = numberOfTeams;
             ViewBag.Margin = margin;
 
+            return View("Result");
             return View("Result", allPlayers);
         }
     }
 }
+

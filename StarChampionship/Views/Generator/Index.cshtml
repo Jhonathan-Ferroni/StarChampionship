@@ -17,6 +17,14 @@
         </div>
     </div>
 
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]
+        </div>
+    }
+
+
     <form asp-action="Generate" method="post" id="generator-form">
 
         @* --- Painel de Configurações --- *@
