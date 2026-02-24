@@ -78,6 +78,7 @@ namespace StarChampionship.Controllers
             }
 
             var candidateGenerations = new List<(List<Team> Teams, double Score)>();
+            var allGenerations = new List<(List<Team> Teams, double Score)>();
 
             for (int i = 0; i < 200; i++)
             {
@@ -101,25 +102,25 @@ namespace StarChampionship.Controllers
 
                 double diff = totals.Max() - totals.Min();
 
+                // 🔥 Guarda TODAS
+                allGenerations.Add((currentTeams, score));
+
+                // 🔥 Guarda apenas as que respeitam margem
                 if (diff <= margin)
                 {
                     candidateGenerations.Add((currentTeams, score));
                 }
             }
 
-            if (!candidateGenerations.Any())
-            {
-                TempData["Error"] = "Não foi possível gerar equipes dentro da margem informada.";
-                return RedirectToAction(nameof(Index));
-            }
+            var pool = candidateGenerations.Any()
+                ? candidateGenerations
+                : allGenerations;
 
-            // 🔥 Pega as 10 melhores
-            var topCandidates = candidateGenerations
-                .OrderBy(x => x.Score)
-                .Take(20)
-                .ToList();
+            var topCandidates = pool
+    .OrderBy(x => x.Score)
+    .Take(Math.Min(10, pool.Count))
+    .ToList();
 
-            // 🔥 Escolhe uma aleatória entre as 10 melhores
             var selected = topCandidates[Random.Shared.Next(topCandidates.Count)];
 
             var bestGeneration = selected.Teams;
