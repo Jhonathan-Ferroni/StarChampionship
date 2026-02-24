@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using StarChampionship.Models;
 using StarChampionship.Services;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Collections.Generic;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace StarChampionship.Controllers
 {
@@ -76,8 +77,7 @@ namespace StarChampionship.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            List<Team> bestGeneration = null;
-            double bestScore = double.MaxValue;
+            var candidateGenerations = new List<(List<Team> Teams, double Score)>();
 
             for (int i = 0; i < 200; i++)
             {
@@ -101,27 +101,29 @@ namespace StarChampionship.Controllers
 
                 double diff = totals.Max() - totals.Min();
 
-                if (diff <= margin && score < bestScore)
+                if (diff <= margin)
                 {
-                    bestScore = score;
-                    bestGeneration = currentTeams;
-                }
-                else if (score < bestScore)
-                {
-                    bestScore = score;
-                    bestGeneration = currentTeams;
+                    candidateGenerations.Add((currentTeams, score));
                 }
             }
 
-            if (bestGeneration == null || !bestGeneration.Any())
+            if (!candidateGenerations.Any())
             {
-                TempData["Error"] = "Não foi possível gerar equipes com os parâmetros informados.";
+                TempData["Error"] = "Não foi possível gerar equipes dentro da margem informada.";
                 return RedirectToAction(nameof(Index));
             }
 
-            // 4. Dados para a View
-            ViewBag.Teams = bestGeneration;
-            ViewBag.Difference = bestScore;
+            // 🔥 Pega as 10 melhores
+            var topCandidates = candidateGenerations
+                .OrderBy(x => x.Score)
+                .Take(20)
+                .ToList();
+
+            // 🔥 Escolhe uma aleatória entre as 10 melhores
+            var selected = topCandidates[Random.Shared.Next(topCandidates.Count)];
+
+            var bestGeneration = selected.Teams;
+            var bestScore = selected.Score;
             ViewBag.SelectedIds = selectedIds;
             ViewBag.NumberOfTeams = numberOfTeams;
             ViewBag.Margin = margin;
