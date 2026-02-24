@@ -24,7 +24,7 @@ namespace StarChampionship.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Generate(int[] selectedIds, int numberOfTeams, bool hasFixedCaptains, Dictionary<string, string>? selectedCaptains, double margin = 2.0)
+        public async Task<IActionResult> Generate(int[] selectedIds, int numberOfTeams, bool hasFixedCaptains, Dictionary<string, string>? selectedCaptains, double margin = 10)
         {
             var selectedPlayersIds = selectedIds?.Distinct().ToHashSet() ?? new HashSet<int>();
 
@@ -80,7 +80,7 @@ namespace StarChampionship.Controllers
             Random rand = new Random();
 
             // 3. Lógica de Equilíbrio (1000 tentativas)
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 50; i++)
             {
                 var shuffledPlayers = selectedPlayers.OrderBy(x => rand.Next()).ToList();
 

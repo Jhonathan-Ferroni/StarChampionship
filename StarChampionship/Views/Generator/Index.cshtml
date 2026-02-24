@@ -34,9 +34,10 @@
                     <div class="card-body py-3">
                         <label for="marginRange" class="form-label fw-bold text-white mb-1 small">
                             <i class="bi bi-sliders text-info"></i> Rigor do Equilíbrio:
-                            <span id="marginValue" class="badge bg-success ms-2">2.0</span>
+                            <span id="marginValue" class="badge bg-success ms-2">10.0</span>
+                            <small id="levelText" class="text-success ms-1" style="font-size: 0.75rem;">(Equilibrado)</small>
                         </label>
-                        <input type="range" name="margin" class="form-range" min="0" max="50" step="0.5" value="2.0" id="marginRange">
+                        <input type="range" name="margin" class="form-range" min="0" max="50" step="0.5" value="10.0" id="marginRange">
                         <div class="d-flex justify-content-between">
                             <small class="text-muted" style="font-size: 0.65rem;">0.0 (Pro)</small>
                             <small class="text-muted" style="font-size: 0.65rem;">50.0 (Várzea)</small>
@@ -166,10 +167,32 @@
         const captainsContainer = document.getElementById('captains-container');
         const checkboxes = document.querySelectorAll('.player-checkbox');
         const countBadge = document.getElementById('selected-count');
+        const levelText = document.getElementById('levelText');
 
-        marginRange.addEventListener('input', function() {
-            marginValue.innerText = parseFloat(this.value).toFixed(1);
-            marginValue.className = `badge ms-2 ${this.value <= 2 ? 'bg-success' : this.value <= 5 ? 'bg-warning text-dark' : 'bg-danger'}`;
+
+            marginRange.addEventListener('input', function() {
+            const val = parseFloat(this.value);
+            marginValue.innerText = val.toFixed(1);
+
+            // Reset de classes
+            marginValue.classList.remove('bg-success', 'bg-warning', 'bg-danger');
+            levelText.classList.remove('text-success', 'text-warning', 'text-danger');
+
+            if (val <= 10.0) {
+                marginValue.classList.add('bg-success');
+                levelText.classList.add('text-success');
+                levelText.innerText = '(Equilibrado)';
+            }
+            else if (val <= 25.0) {
+                marginValue.classList.add('bg-warning', 'text-dark');
+                levelText.classList.add('text-warning');
+                levelText.innerText = '(Pequena Diferença)';
+            }
+            else {
+                marginValue.classList.add('bg-danger');
+                levelText.classList.add('text-danger');
+                levelText.innerText = '(Desnível Técnico)';
+            }
         });
 
         function updateCaptainsUI() {

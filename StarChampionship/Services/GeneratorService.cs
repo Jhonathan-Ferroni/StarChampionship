@@ -48,18 +48,20 @@ namespace StarChampionship.Services
                 }
             }
 
-            // 4. Ordena os jogadores restantes pelo Overall (do maior para o menor)
-            // Essencial para a lógica de distribuição gulosa (Greedy Algorithm)
-            remainingPlayers = remainingPlayers.OrderByDescending(p => p.Overall).ToList();
+            // 4. Ordena aleatoriedade e potes
+            var rand = new Random();
+            remainingPlayers = remainingPlayers
+                .OrderByDescending(p => Math.Floor(p.Overall / 5.0)) // Agrupa em potes (ex: 80-84, 85-89)
+                .ThenBy(p => Guid.NewGuid()) // Embaralha jogadores que estão no mesmo pote
+                .ToList();
 
-            // 5. Distribui os jogadores restantes
-            // Lógica de equilíbrio: sempre adicionamos o próximo melhor jogador ao time 
-            // que possui a menor soma de Overall no momento.
+            // 5. Distribuição (Ajuste no critério de desempate)
             foreach (var player in remainingPlayers)
             {
                 var weakestTeam = teams
-                    .OrderBy(t => t.Players.Sum(p => p.Overall))
-                    .ThenBy(t => t.Players.Count) // Critério de desempate: menor número de jogadores
+                    .OrderBy(t => t.Players.Sum(p => p.Overall)) // Critério 1: Menor soma total
+                    .ThenBy(t => t.Players.Count)                // Critério 2: Menor número de jogadores
+                    .ThenBy(t => rand.Next())                    // Critério 3: Sorteio puro se houver empate nos acima
                     .First();
 
                 weakestTeam.Players.Add(player);
