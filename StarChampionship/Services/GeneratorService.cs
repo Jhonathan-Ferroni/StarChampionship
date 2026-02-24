@@ -7,6 +7,7 @@ namespace StarChampionship.Services
 {
     public class GeneratorService
     {
+        private static readonly Random _rand = Random.Shared;
         public List<Team> BuildBalancedTeams(List<Player> players, int numberOfTeams, Dictionary<int, int?> selectedCaptains)
         {
             // 1. Validação inicial de segurança
@@ -49,24 +50,42 @@ namespace StarChampionship.Services
             }
 
             // 4. Ordena aleatoriedade e potes
-            var rand = new Random();
-            remainingPlayers = remainingPlayers
-                .OrderByDescending(p => Math.Floor(p.Overall / 5.0)) // Agrupa em potes (ex: 80-84, 85-89)
-                .ThenBy(p => Guid.NewGuid()) // Embaralha jogadores que estão no mesmo pote
+            var pots = remainingPlayers
+                .GroupBy(p => Math.Floor(p.Overall / 7.0))
+                .OrderByDescending(g => g.Key) // pote mais forte primeiro
                 .ToList();
 
+            bool reverse = false;
+
             // 5. Distribuição (Ajuste no critério de desempate)
-            foreach (var player in remainingPlayers)
+
+            foreach (var pot in pots)
             {
-                var weakestTeam = teams
-                    .OrderBy(t => t.Players.Sum(p => p.Overall)) // Critério 1: Menor soma total
-                    .ThenBy(t => t.Players.Count)                // Critério 2: Menor número de jogadores
-                    .ThenBy(t => rand.Next())                    // Critério 3: Sorteio puro se houver empate nos acima
-                    .First();
+                var shuffledPot = pot
+                    .OrderBy(p => _rand.Next())
+                    .ToList();
 
-                weakestTeam.Players.Add(player);
+                // Ordena times por força atual
+                var orderedTeams = teams
+                    .OrderBy(t => t.Players.Sum(p => p.Overall))
+                    .ThenBy(t => t.Players.Count)
+                    .ToList();
+
+                if (reverse)
+                    orderedTeams.Reverse();
+
+                int index = 0;
+
+                foreach (var player in shuffledPot)
+                {
+                    orderedTeams[index % orderedTeams.Count]
+                        .Players.Add(player);
+
+                    index++;
+                }
+
+                reverse = !reverse;
             }
-
             return teams;
         }
     }

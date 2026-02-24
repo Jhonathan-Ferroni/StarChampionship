@@ -3,6 +3,7 @@ using StarChampionship.Models;
 using StarChampionship.Services;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace StarChampionship.Controllers
 {
@@ -76,33 +77,38 @@ namespace StarChampionship.Controllers
             }
 
             List<Team> bestGeneration = null;
-            double minVariance = double.MaxValue;
-            Random rand = new Random();
+            double bestScore = double.MaxValue;
 
-            // 3. Lógica de Equilíbrio (1000 tentativas)
-            for (int i = 0; i < 50; i++)
+            for (int i = 0; i < 200; i++)
             {
-                var shuffledPlayers = selectedPlayers.OrderBy(x => rand.Next()).ToList();
+                var currentTeams = _generatorService
+                    .BuildBalancedTeams(selectedPlayers, numberOfTeams, captainsToProcess);
 
-                // Chamamos o serviço com o dicionário sanitizado
-                var currentTeams = _generatorService.BuildBalancedTeams(shuffledPlayers, numberOfTeams, captainsToProcess);
+                if (currentTeams == null || !currentTeams.Any())
+                    continue;
 
-                if (currentTeams == null || !currentTeams.Any()) continue;
+                var totals = currentTeams
+                    .Select(t => t.TotalOverall)
+                    .ToList();
 
-                double maxOverall = currentTeams.Max(t => t.TotalOverall);
-                double minOverall = currentTeams.Min(t => t.TotalOverall);
-                double diff = maxOverall - minOverall;
+                var avg = totals.Average();
 
-                if (diff <= margin)
+                var variance = totals
+                    .Select(x => Math.Pow(x - avg, 2))
+                    .Average();
+
+                double score = Math.Sqrt(variance);
+
+                double diff = totals.Max() - totals.Min();
+
+                if (diff <= margin && score < bestScore)
                 {
+                    bestScore = score;
                     bestGeneration = currentTeams;
-                    minVariance = diff;
-                    break;
                 }
-
-                if (diff < minVariance)
+                else if (score < bestScore)
                 {
-                    minVariance = diff;
+                    bestScore = score;
                     bestGeneration = currentTeams;
                 }
             }
@@ -115,7 +121,7 @@ namespace StarChampionship.Controllers
 
             // 4. Dados para a View
             ViewBag.Teams = bestGeneration;
-            ViewBag.Difference = minVariance;
+            ViewBag.Difference = bestScore;
             ViewBag.SelectedIds = selectedIds;
             ViewBag.NumberOfTeams = numberOfTeams;
             ViewBag.Margin = margin;
