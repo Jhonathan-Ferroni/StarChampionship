@@ -124,6 +124,8 @@ namespace StarChampionship.Controllers
 
             var bestGeneration = selected.Teams;
             var bestScore = selected.Score;
+            ViewBag.Teams = bestGeneration;
+            ViewBag.Difference = bestScore;
             ViewBag.SelectedIds = selectedIds;
             ViewBag.NumberOfTeams = numberOfTeams;
             ViewBag.Margin = margin;
