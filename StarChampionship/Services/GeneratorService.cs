@@ -8,6 +8,20 @@ namespace StarChampionship.Services
     public class GeneratorService
     {
         private static readonly Random _rand = Random.Shared;
+
+        private static List<T> Shuffle<T>(IEnumerable<T> items)
+        {
+            var list = items.ToList();
+
+            for (int i = list.Count - 1; i > 0; i--)
+            {
+                int j = _rand.Next(i + 1);
+                (list[i], list[j]) = (list[j], list[i]);
+            }
+
+            return list;
+        }
+
         public List<Team> BuildBalancedTeams(List<Player> players, int numberOfTeams, Dictionary<int, int?> selectedCaptains)
         {
             // 1. Validação inicial de segurança
@@ -55,26 +69,25 @@ namespace StarChampionship.Services
                 .OrderByDescending(g => g.Key) // pote mais forte primeiro
                 .ToList();
 
-            bool reverse = false;
+            bool reverse = _rand.Next(2) == 0;
 
             // 5. Distribuição (Ajuste no critério de desempate)
 
             foreach (var pot in pots)
             {
-                var shuffledPot = pot
-                    .OrderBy(p => _rand.Next())
-                    .ToList();
+                var shuffledPot = Shuffle(pot);
 
                 // Ordena times por força atual
                 var orderedTeams = teams
                     .OrderBy(t => t.Players.Sum(p => p.Overall))
                     .ThenBy(t => t.Players.Count)
+                                        .ThenBy(_ => _rand.Next())
                     .ToList();
 
                 if (reverse)
                     orderedTeams.Reverse();
 
-                int index = 0;
+                int index = _rand.Next(orderedTeams.Count);
 
                 foreach (var player in shuffledPot)
                 {
