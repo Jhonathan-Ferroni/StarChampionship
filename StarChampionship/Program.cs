@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using StarChampionship.Data;
 using StarChampionship.Services;
 using System.Globalization;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,13 @@ var builder = WebApplication.CreateBuilder(args);
 // CONFIGURAÇÃO DA PORTA (RENDER)
 // ===========================
 var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login"; // Redireciona para cá se não estiver logado
+        options.AccessDeniedPath = "/Account/Login";
+    });
 
 builder.WebHost.ConfigureKestrel(options =>
 {
@@ -89,6 +97,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 app.UseRouting();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

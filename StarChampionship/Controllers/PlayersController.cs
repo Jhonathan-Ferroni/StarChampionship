@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using StarChampionship.Services;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using StarChampionship.Models;
 using StarChampionship.Models.ViewModels;
+using StarChampionship.Services;
 using StarChampionship.Services.Exceptions;
 using System.Diagnostics;
 
@@ -22,13 +23,13 @@ namespace StarChampionship.Controllers
             var list = await _playerService.FindAllAsync();
             return View(list);
         }
-
+        [Authorize]
         public IActionResult Create()
         {
             // Sem departamentos, não precisamos de ViewModel, apenas um Player vazio
             return View();
         }
-
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Player player)
@@ -41,7 +42,7 @@ namespace StarChampionship.Controllers
             await _playerService.InsertAsync(player);
             return RedirectToAction(nameof(Index));
         }
-
+        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -57,7 +58,7 @@ namespace StarChampionship.Controllers
             }
             return View(obj);
         }
-
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
@@ -86,7 +87,7 @@ namespace StarChampionship.Controllers
             }
             return View(obj);
         }
-
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -102,7 +103,7 @@ namespace StarChampionship.Controllers
 
             return View(obj);
         }
-
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Player player)
