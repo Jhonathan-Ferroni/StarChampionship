@@ -1,8 +1,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.3.11505.172 d18.3
+VisualStudioVersion = 18.3.11505.172
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StarChampionship", "StarChampionship.csproj", "{AADE07CF-BA96-BF0D-BBDB-C97E91FF01EF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StarChampionship.Tests", "..\StarChampionship.Tests\StarChampionship.Tests.csproj", "{85C9AC65-F39D-4699-A626-FD1CA0D3AA06}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,6 +16,10 @@ Global
 		{AADE07CF-BA96-BF0D-BBDB-C97E91FF01EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AADE07CF-BA96-BF0D-BBDB-C97E91FF01EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AADE07CF-BA96-BF0D-BBDB-C97E91FF01EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85C9AC65-F39D-4699-A626-FD1CA0D3AA06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85C9AC65-F39D-4699-A626-FD1CA0D3AA06}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85C9AC65-F39D-4699-A626-FD1CA0D3AA06}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85C9AC65-F39D-4699-A626-FD1CA0D3AA06}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
