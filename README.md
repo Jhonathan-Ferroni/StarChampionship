@@ -9,6 +9,7 @@ O projeto foi construído em **.NET / C#**, com interface server-side em **Razor
 ## 📌 Sumário
 
 - [Visão geral](#-visão-geral)
+- [🌐 Deploy em Produção](#--deploy-em-produção)
 - [Funcionalidades principais](#-funcionalidades-principais)
 - [Tecnologias utilizadas](#-tecnologias-utilizadas)
 - [Arquitetura da aplicação](#-arquitetura-da-arquitetura)
@@ -17,7 +18,6 @@ O projeto foi construído em **.NET / C#**, com interface server-side em **Razor
 - [Execução local (sem Docker)](#-execução-local-sem-docker)
 - [Execução com Docker](#-execução-com-docker)
 - [Banco de dados MySQL (Aiven)](#-banco-de-dados-mysql-aiven)
-- [Deploy no Render](#-deploy-no-render)
 - [Migrations e manutenção do banco](#-migrations-e-manutenção-do-banco)
 - [Estrutura de pastas](#-estrutura-de-pastas)
 
@@ -28,6 +28,7 @@ O projeto foi construído em **.NET / C#**, com interface server-side em **Razor
 O **Star Championship** resolve um problema comum em jogos e peladas: montar dois times com níveis parecidos de habilidade.
 
 A aplicação permite:
+
 1. Cadastrar jogadores com foto e atributos.
 2. Calcular automaticamente o **Overall** de cada atleta.
 3. Selecionar um conjunto de jogadores para o sorteio.
@@ -38,9 +39,20 @@ Tudo isso em uma interface web responsiva, com navegação simples e foco em pro
 
 ---
 
+## 🌐 Deploy em Produção
+
+**Acesse a aplicação em produção:**
+
+🔗 **https://starchampionship.onrender.com/**
+
+A aplicação está hospedada no **Render** com banco de dados **MySQL** gerenciado pela **Aiven**.
+
+---
+
 ## 🚀 Funcionalidades principais
 
 ### 1) Gestão completa de jogadores (CRUD)
+
 - **Criar** atleta com nome, URL de imagem e atributos técnicos.
 - **Listar** jogadores com ranking e destaque de top características.
 - **Visualizar detalhes** individuais.
@@ -48,7 +60,9 @@ Tudo isso em uma interface web responsiva, com navegação simples e foco em pro
 - **Excluir** registro.
 
 ### 2) Cálculo de Overall automático
+
 O `Overall` é calculado como a média dos 8 atributos cadastrados:
+
 - Shoot
 - Dribble
 - First Touch
@@ -59,13 +73,16 @@ O `Overall` é calculado como a média dos 8 atributos cadastrados:
 - Strength
 
 ### 3) Gerador de times equilibrados
+
 No módulo **Gerador**:
+
 - O usuário seleciona os jogadores;
 - Define uma margem de equilíbrio;
 - O sistema executa múltiplas tentativas aleatórias para encontrar a melhor divisão;
 - Exibe os dois times, somatório por equipe e diferença final.
 
 ### 4) Ajuste rápido da margem
+
 Na tela de resultado, é possível “re-sortear” com nova margem sem precisar refazer toda a seleção.
 
 ---
@@ -73,6 +90,7 @@ Na tela de resultado, é possível “re-sortear” com nova margem sem precisar
 ## 🧰 Tecnologias utilizadas
 
 ### Back-end
+
 - **.NET 8**
 - **C#**
 - **ASP.NET Core MVC**
@@ -80,18 +98,25 @@ Na tela de resultado, é possível “re-sortear” com nova margem sem precisar
 - **Dependency Injection** nativa do ASP.NET
 
 ### Dados
+
 - **Entity Framework Core 9**
 - **Pomelo.EntityFrameworkCore.MySql**
 - **MySqlConnector**
 - **MySQL**
 
 ### Front-end
+
 - **HTML (Razor .cshtml)**
 - **Bootstrap** (tema custom + responsividade)
 - **Bootstrap Icons**
 - **jQuery** e validação unobtrusive
 
+### Testes
+
+- **xUnit** (testes unitários no .NET)
+
 ### Infra e deploy
+
 - **Docker** (build/publish multi-stage)
 - **Render** (hospedagem da aplicação web)
 - **Aiven** (MySQL gerenciado na nuvem)
@@ -101,6 +126,7 @@ Na tela de resultado, é possível “re-sortear” com nova margem sem precisar
 ## 🏛️ Arquitetura da aplicação
 
 A solução segue o padrão **MVC**:
+
 - `Controllers/` → fluxo HTTP e regras de entrada/saída.
 - `Models/` → entidades e validações.
 - `Views/` → páginas Razor renderizadas no servidor.
@@ -112,7 +138,9 @@ A solução segue o padrão **MVC**:
 ## 🗃️ Modelo de dados
 
 ### Entidade principal: `Player`
+
 Campos principais:
+
 - `Id`, `Name`, `ImageUrl` (opcional).
 - Atributos técnicos (0 a 100).
 - `Overall` (calculado).
@@ -122,10 +150,12 @@ Campos principais:
 ## ▶️ Execução local (sem Docker)
 
 ### Pré-requisitos
+
 - .NET SDK 8+
 - MySQL disponível (local ou remoto)
 
 ### 1) Clonar
+
 ```bash
 git clone <url-do-repositorio>
 cd StarChampionship
@@ -212,10 +242,10 @@ dotnet ef migrations add NomeDaMigration --project StarChampionship/StarChampion
 
 ---
 
-
 ## 👨‍💻 Autor
 
 Projeto **Star Championship**, desenvolvido com foco em organização de times equilibrados e experiência web moderna com .NET + C#.
 
 ```
 Jhonathan Ferroni.
+```
