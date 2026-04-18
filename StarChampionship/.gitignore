@@ -1,0 +1,187 @@
+# ============================================
+# .NET & Visual Studio
+# ============================================
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+*.log
+*.logs
+
+# Visual Studio
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.sln
+*.csproj.user
+*.vcxproj.user
+*.vcxproj.filters
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# Rider
+.idea/
+*.sln.iml
+.localhistory/
+
+# ============================================
+# Build Results
+# ============================================
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# ============================================
+# NuGet & Dependencies
+# ============================================
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+.packages/
+*.DotSettings
+NuGetFallbackFolder/
+.nuget/
+
+# ============================================
+# Entity Framework
+# ============================================
+*.db
+*.db-shm
+*.db-wal
+Migrations/
+!Migrations/*.cs
+
+# ============================================
+# 🔐 SECRETS & SENSITIVE DATA (OBRIGATÓRIO)
+# ============================================
+
+# Environment Files (NUNCA commitar!)
+.env
+.env.local
+.env.*.local
+.env.production.local
+.env.test.local
+
+# appsettings com secrets
+appsettings.Production.json
+appsettings.production.json
+appsettings.*.local.json
+
+# User Secrets (certificados, chaves)
+[Uu]ser[Ss]ecrets/
+secrets.json
+*.pfx
+*.pem
+*.key
+*.crt
+*.cer
+
+# ============================================
+# Operating System Files
+# ============================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ============================================
+# IDE & Editor Specific
+# ============================================
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+.jshintrc
+.prettierrc
+
+# ============================================
+# OS Specific
+# ============================================
+[Tt]humbs.db
+[Dd]esktop.ini
+*.lnk
+
+# ============================================
+# Project Specific - StarChampionship
+# ============================================
+
+# Local Development
+local/
+temp/
+tmp/
+.local
+
+# Database
+*.mdb
+*.accdb
+
+# Test Results
+TestResults/
+coverage/
+.coverage
+
+# ============================================
+# Docker
+# ============================================
+.dockerignore
+docker-compose.override.yml
+
+# ============================================
+# CI/CD
+# ============================================
+.github/workflows/secrets.yml
+
+# ============================================
+# Yarn, npm, node (if any)
+# ============================================
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# ============================================
+# Python (if any)
+# ============================================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ============================================
+# Backup Files
+# ============================================
+*.bak
+*.backup
+*.tmp
+*.temp
+
+# ============================================
+# 🔒 CRÍTICO: Nunca commitar estes arquivos!
+# ============================================
+# - Qualquer arquivo contendo JWT_SECRET_KEY
+# - Qualquer arquivo contendo ADMIN_PASSWORD
+# - appsettings.Production.json
+# - Certificados (.pfx, .pem)
+# - Chaves privadas
+# - User secrets
+# ============================================

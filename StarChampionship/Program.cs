@@ -4,6 +4,9 @@ using StarChampionship.Data;
 using StarChampionship.Services;
 using System.Globalization;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,10 +15,58 @@ var builder = WebApplication.CreateBuilder(args);
 // ===========================
 var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
+// ===========================
+// CONFIGURAÇÃO DE AUTENTICAÇÃO (JWT + Cookies)
+// ===========================
+var jwtSecretKey = builder.Configuration["JwtSettings:SecretKey"] 
+    ?? throw new InvalidOperationException("JWT SecretKey not configured in appsettings.json");
+var jwtIssuer = builder.Configuration["JwtSettings:Issuer"] ?? "StarChampionshipApi";
+var jwtAudience = builder.Configuration["JwtSettings:Audience"] ?? "StarChampionshipUsers";
+
+var key = Encoding.ASCII.GetBytes(jwtSecretKey);
+
+builder.Services
+    .AddAuthentication(options =>
     {
-        options.LoginPath = "/Account/Login"; // Redireciona para cá se não estiver logado
+        // Define JWT como schema de autenticação padrão
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = true,
+            ValidIssuer = jwtIssuer,
+            ValidateAudience = true,
+            ValidAudience = jwtAudience,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero // Sem tolerância de tempo
+        };
+
+        // Retorna erro JSON em vez de redirecionar para login
+        options.Events = new JwtBearerEvents
+        {
+            OnChallenge = context =>
+            {
+                context.HandleResponse();
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json";
+                return context.Response.WriteAsJsonAsync(new { error = "Unauthorized" });
+            },
+            OnForbidden = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                context.Response.ContentType = "application/json";
+                return context.Response.WriteAsJsonAsync(new { error = "Forbidden" });
+            }
+        };
+    })
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+    {
+        options.LoginPath = "/Account/Login";
         options.AccessDeniedPath = "/Account/Login";
     });
 
@@ -48,9 +99,20 @@ builder.Services.AddDbContext<StarChampionshipContext>(options =>
 builder.Services.AddScoped<PlayerService>();
 builder.Services.AddScoped<GeneratorService>();
 builder.Services.AddScoped<SeedingService>();
-
+builder.Services.AddScoped<JwtTokenService>();
 
 builder.Services.AddControllersWithViews();
+
+// Adiciona suporte a APIs REST
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
 
@@ -97,11 +159,20 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 app.UseRouting();
+
+// Adiciona CORS
+app.UseCors("AllowAll");
+
+// Middleware de autenticação e autorização
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Mapeia rotas MVC tradicionais
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+// Mapeia as APIs REST
+app.MapControllers();
 
 app.Run();
