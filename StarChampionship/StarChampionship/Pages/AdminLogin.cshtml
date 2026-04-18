@@ -1,0 +1,60 @@
+@page
+@model StarChampionship.Pages.AdminLoginModel
+@{
+    ViewData["Title"] = "Admin Login - StarChampionship";
+    Layout = null; // Página autônoma
+}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+    <style>
+        body { background: linear-gradient(135deg,#0f172a 0,#1e293b 100%); color: #e2e8f0; }
+        .card { background: rgba(17,24,39,0.95); border: 1px solid #334155; }
+    </style>
+</head>
+<body>
+    <div class="d-flex align-items-center justify-content-center" style="min-height:100vh">
+        <div class="card p-4" style="width:380px">
+            <h4 class="text-center text-info mb-3"><i class="bi bi-shield-lock"></i> Admin Login</h4>
+
+            <div id="errorAlert" class="alert alert-danger d-none" role="alert"></div>
+
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label for="password" class="form-label">Senha do Admin</label>
+                    <input type="password" id="password" class="form-control" required />
+                </div>
+                <button type="submit" id="loginBtn" class="btn btn-primary w-100">Entrar</button>
+            </form>
+
+            <div class="text-center mt-3">
+                <a href="/" class="text-muted">Voltar</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/auth-service.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e){
+            e.preventDefault();
+            const pwd = document.getElementById('password').value;
+            const res = await authService.login(pwd);
+            if(res && res.success){
+                window.location.href = '/players';
+            } else {
+                const err = document.getElementById('errorAlert');
+                err.textContent = res.error || 'Senha incorreta';
+                err.classList.remove('d-none');
+            }
+        });
+    </script>
+</body>
+</html>

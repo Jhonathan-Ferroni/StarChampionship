@@ -26,12 +26,21 @@ var jwtAudience = builder.Configuration["JwtSettings:Audience"] ?? "StarChampion
 var key = Encoding.ASCII.GetBytes(jwtSecretKey);
 
 builder.Services
+    // Usar Cookies como esquema padrão para páginas MVC/Razor (navegador)
+    // e manter JWT Bearer disponível para chamadas API (AJAX / clientes externos).
     .AddAuthentication(options =>
     {
-        // Define JWT como schema de autenticação padrão
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     })
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+    {
+        // Página de login usada pelo fluxo baseado em Cookie (Razor Pages / MVC)
+        options.LoginPath = "/admin/login";
+        options.AccessDeniedPath = "/admin/login";
+    })
+    // JWT Bearer configurado para APIs — continua retornando JSON em respostas 401/403
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -46,11 +55,11 @@ builder.Services
             ClockSkew = TimeSpan.Zero // Sem tolerância de tempo
         };
 
-        // Retorna erro JSON em vez de redirecionar para login
         options.Events = new JwtBearerEvents
         {
             OnChallenge = context =>
             {
+                // Responder com JSON para chamadas API
                 context.HandleResponse();
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 context.Response.ContentType = "application/json";
@@ -63,11 +72,6 @@ builder.Services
                 return context.Response.WriteAsJsonAsync(new { error = "Forbidden" });
             }
         };
-    })
-    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
-    {
-        options.LoginPath = "/Account/Login";
-        options.AccessDeniedPath = "/Account/Login";
     });
 
 builder.WebHost.ConfigureKestrel(options =>
@@ -102,6 +106,8 @@ builder.Services.AddScoped<SeedingService>();
 builder.Services.AddScoped<JwtTokenService>();
 
 builder.Services.AddControllersWithViews();
+// Registrar Razor Pages para suportar Pages/AdminLogin.cshtml
+builder.Services.AddRazorPages();
 
 // Adiciona suporte a APIs REST
 builder.Services.AddCors(options =>
