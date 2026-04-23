@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Swashbuckle.AspNetCore.SwaggerGen;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,21 +28,12 @@ var jwtAudience = builder.Configuration["JwtSettings:Audience"] ?? "StarChampion
 var key = Encoding.ASCII.GetBytes(jwtSecretKey);
 
 builder.Services
-    // Usar Cookies como esquema padrão para páginas MVC/Razor (navegador)
-    // e manter JWT Bearer disponível para chamadas API (AJAX / clientes externos).
+    // Usar JWT Bearer como esquema padrão para APIs
     .AddAuthentication(options =>
     {
-        options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-        options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     })
-    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
-    {
-        // Página de login usada pelo fluxo baseado em Cookie (Razor Pages / MVC)
-        options.LoginPath = "/admin/login";
-        options.AccessDeniedPath = "/admin/login";
-    })
-    // JWT Bearer configurado para APIs — continua retornando JSON em respostas 401/403
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -105,9 +98,8 @@ builder.Services.AddScoped<GeneratorService>();
 builder.Services.AddScoped<SeedingService>();
 builder.Services.AddScoped<JwtTokenService>();
 
-builder.Services.AddControllersWithViews();
-// Registrar Razor Pages para suportar Pages/AdminLogin.cshtml
-builder.Services.AddRazorPages();
+// Registrar apenas controllers (API-only)
+builder.Services.AddControllers();
 
 // Adiciona suporte a APIs REST
 builder.Services.AddCors(options =>
@@ -120,7 +112,50 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Configuração do Swagger com suporte a JWT
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "StarChampionship API", Version = "v1" });
+
+    // Configura o botão "Authorize" para inserir o JWT
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Insira o token JWT desta maneira: Bearer {seu_token}"
+    });
+
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+
 var app = builder.Build();
+
+// Ativa o Swagger apenas em ambiente de Desenvolvimento
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "StarChampionship API v1");
+    });
+}
 
 // ===========================
 // SEEDING AUTOMÁTICO
@@ -159,7 +194,16 @@ app.UseRequestLocalization(localizationOptions);
 // ===========================
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    // Retornar JSON para erros em produção (API)
+    app.UseExceptionHandler(a =>
+    {
+        a.Run(async context =>
+        {
+            context.Response.StatusCode = 500;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsJsonAsync(new { error = "An internal server error occurred." });
+        });
+    });
     app.UseHsts();
 }
 
@@ -172,11 +216,6 @@ app.UseCors("AllowAll");
 // Middleware de autenticação e autorização
 app.UseAuthentication();
 app.UseAuthorization();
-
-// Mapeia rotas MVC tradicionais
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 // Mapeia as APIs REST
 app.MapControllers();
