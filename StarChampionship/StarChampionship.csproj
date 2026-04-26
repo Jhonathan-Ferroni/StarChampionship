@@ -26,4 +26,13 @@
 	<PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="8.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="StarChampionship\Pages\" />
+    <Folder Include="Views\Account\" />
+    <Folder Include="Views\Generator\" />
+    <Folder Include="Views\Home\" />
+    <Folder Include="Views\Players\" />
+    <Folder Include="Views\Shared\" />
+  </ItemGroup>
+
 </Project>
