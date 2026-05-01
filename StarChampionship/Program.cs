@@ -206,6 +206,8 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseCors("AllowAll");
+
 // Mapeia as APIs REST
 app.MapControllers();
 
