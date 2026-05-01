@@ -67,6 +67,24 @@ builder.Services
         };
     });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("StarChampionshipPolicy", policy =>
+    {
+        policy.WithOrigins(
+                    "https://star-championship-front-end.vercel.app/", // Vercel
+                    "https://starchampionship.onrender.com/",
+                    "https://www.starchampionship.com",  // Domínio oficial de produção
+                    "https://starchampionship.com",      // Variação sem www
+                    "http://localhost:3000",             // Para testes locais do front-end (ex: React)
+                    "http://localhost:5173"              // Para testes locais do front-end (ex: Vite)
+               )
+              .WithMethods("GET", "POST", "PUT", "DELETE") // Apenas os métodos que você realmente usa
+              .WithHeaders("Content-Type", "Authorization") // Apenas os cabeçalhos necessários
+              .AllowCredentials(); // Permite envio de cookies/tokens apenas para as origens acima
+    });
+});
+
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.ListenAnyIP(int.Parse(port));
