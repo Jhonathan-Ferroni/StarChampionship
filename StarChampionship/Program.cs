@@ -102,15 +102,6 @@ builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddControllers();
 
 // Adiciona suporte a APIs REST
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-});
 
 // Configuração do Swagger com suporte a JWT
 builder.Services.AddEndpointsApiExplorer();
@@ -210,8 +201,6 @@ if (!app.Environment.IsDevelopment())
 app.UseStaticFiles();
 app.UseRouting();
 
-// Adiciona CORS
-app.UseCors("AllowAll");
 
 // Middleware de autenticação e autorização
 app.UseAuthentication();
