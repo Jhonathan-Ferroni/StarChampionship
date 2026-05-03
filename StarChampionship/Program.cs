@@ -72,23 +72,20 @@ builder.Services.AddCors(options =>
     options.AddPolicy("StarChampionshipPolicy", policy =>
     {
         policy.WithOrigins(
-                    "https://star-championship-front-end.vercel.app/", // Vercel
-                    "https://starchampionship.onrender.com/",
-                    "https://www.starchampionship.com",  // Domínio oficial de produção
-                    "https://starchampionship.com",      // Variação sem www
-                    "http://localhost:3000",             // Para testes locais do front-end (ex: React)
-                    "http://localhost:5173"              // Para testes locais do front-end (ex: Vite)
+                    "https://star-championship-front-end.vercel.app", 
+                    "https://starchampionship.onrender.com",         
+                    "https://www.starchampionship.com",
+                    "https://starchampionship.com",
+                    "http://localhost:3000",
+                    "http://localhost:5173"
                )
-              .WithMethods("GET", "POST", "PUT", "DELETE") // Apenas os métodos que você realmente usa
-              .WithHeaders("Content-Type", "Authorization") // Apenas os cabeçalhos necessários
-              .AllowCredentials(); // Permite envio de cookies/tokens apenas para as origens acima
+              .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") 
+              .WithHeaders("Content-Type", "Authorization")
+              .AllowCredentials();
     });
 });
 
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenAnyIP(int.Parse(port));
-});
+builder.WebHost.UseUrls($"http://*:{port}");
 
 // ===========================
 // CONNECTION STRING
@@ -217,16 +214,17 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseStaticFiles();
+
 app.UseRouting();
 
+// 1º O CORS DEVE VIR AQUI! E com o nome certo.
+app.UseCors("StarChampionshipPolicy");
 
-// Middleware de autenticação e autorização
+// 2º Autenticação e Autorização vêm DEPOIS do CORS
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseCors("AllowAll");
-
-// Mapeia as APIs REST
+// 3º Mapeia os controllers
 app.MapControllers();
 
 app.Run();
